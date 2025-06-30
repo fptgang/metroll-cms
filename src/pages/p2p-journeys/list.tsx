@@ -13,6 +13,7 @@ import {
 } from "@ant-design/icons";
 import { P2PJourneyDto } from "../../data";
 import { useP2PJourneys, useDeleteP2PJourney } from "../../hooks";
+import { formatDate } from "../../utils/formatDate";
 
 export const P2PJourneyList: React.FC = () => {
   const [page, setPage] = useState(0);
@@ -90,7 +91,7 @@ export const P2PJourneyList: React.FC = () => {
           <Table.Column
             dataIndex="createdAt"
             title="Created At"
-            render={(value: string) => new Date(value).toLocaleDateString()}
+            render={(value: string) => formatDate(value)}
           />
           <Table.Column
             title="Actions"

@@ -11,7 +11,7 @@ import {
 } from "../interfaces";
 
 export class VoucherService extends BaseService {
-  private readonly endpoint = "/account/vouchers";
+  private readonly endpoint = "/vouchers";
 
   constructor() {
     super();

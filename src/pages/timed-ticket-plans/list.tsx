@@ -13,6 +13,7 @@ import {
 } from "@ant-design/icons";
 import { TimedTicketPlanDto } from "../../data";
 import { useTimedTicketPlans, useDeleteTimedTicketPlan } from "../../hooks";
+import { formatDate } from "../../utils/formatDate";
 
 export const TimedTicketPlanList: React.FC = () => {
   const [page, setPage] = useState(0);
@@ -30,17 +31,7 @@ export const TimedTicketPlanList: React.FC = () => {
   const total = data?.totalElements || 0;
 
   const formatDuration = (validDuration: number) => {
-    const days = Math.floor(validDuration / (24 * 60));
-    const hours = Math.floor((validDuration % (24 * 60)) / 60);
-    const minutes = validDuration % 60;
-
-    if (days > 0) {
-      return `${days} day${days > 1 ? "s" : ""}`;
-    } else if (hours > 0) {
-      return `${hours} hour${hours > 1 ? "s" : ""}`;
-    } else {
-      return `${minutes} minute${minutes > 1 ? "s" : ""}`;
-    }
+    return `${validDuration} day${validDuration > 1 ? "s" : ""}`;
   };
 
   return (
@@ -92,7 +83,7 @@ export const TimedTicketPlanList: React.FC = () => {
           <Table.Column
             dataIndex="createdAt"
             title="Created At"
-            render={(value: string) => new Date(value).toLocaleDateString()}
+            render={(value: string) => formatDate(value)}
           />
           <Table.Column
             title="Actions"

@@ -9,6 +9,7 @@ import { Table, Space, Tag, Card, Input, Pagination } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import { TicketDto, TicketStatus, TicketType } from "../../data";
 import { useTickets } from "../../hooks";
+import { formatDate } from "../../utils/formatDate";
 
 export const TicketList: React.FC = () => {
   const [page, setPage] = useState(0);
@@ -81,17 +82,17 @@ export const TicketList: React.FC = () => {
           <Table.Column
             dataIndex="purchaseDate"
             title="Purchase Date"
-            render={(value: string) => new Date(value).toLocaleDateString()}
+            render={(value: string) => formatDate(value)}
           />
           <Table.Column
             dataIndex="validUntil"
             title="Valid Until"
-            render={(value: string) => new Date(value).toLocaleDateString()}
+            render={(value: string) => formatDate(value)}
           />
           <Table.Column
             dataIndex="createdAt"
             title="Created At"
-            render={(value: string) => new Date(value).toLocaleDateString()}
+            render={(value: string) => formatDate(value)}
           />
           <Table.Column
             title="Actions"

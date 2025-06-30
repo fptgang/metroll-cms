@@ -10,5 +10,11 @@ export * from "./ticket";
 // Voucher interfaces
 export * from "./voucher";
 
+// Subway interfaces
+export * from "./subway";
+
+// Order interfaces
+export * from "./order";
+
 // Enums and types
 export * from "../types/enums";

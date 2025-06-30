@@ -6,13 +6,18 @@ import {
   CreateButton,
 } from "@refinedev/antd";
 import { Table, Space, Tag, Card, Input, Pagination, Button } from "antd";
-import { SearchOutlined, DollarOutlined } from "@ant-design/icons";
+import {
+  SearchOutlined,
+  DollarOutlined,
+  DeleteOutlined,
+} from "@ant-design/icons";
 import { VoucherDto, VoucherStatus } from "../../data";
 import {
   useVouchers,
   useDeleteVoucher,
   useUpdateVoucherStatus,
 } from "../../hooks";
+import { formatDate } from "../../utils/formatDate";
 
 export const VoucherList: React.FC = () => {
   const [page, setPage] = useState(0);
@@ -105,17 +110,17 @@ export const VoucherList: React.FC = () => {
           <Table.Column
             dataIndex="validFrom"
             title="Valid From"
-            render={(value: string) => new Date(value).toLocaleDateString()}
+            render={(value: string) => formatDate(value)}
           />
           <Table.Column
             dataIndex="validUntil"
             title="Valid Until"
-            render={(value: string) => new Date(value).toLocaleDateString()}
+            render={(value: string) => formatDate(value)}
           />
           <Table.Column
             dataIndex="createdAt"
             title="Created At"
-            render={(value: string) => new Date(value).toLocaleDateString()}
+            render={(value: string) => formatDate(value)}
           />
           <Table.Column
             title="Actions"
@@ -124,7 +129,7 @@ export const VoucherList: React.FC = () => {
               <Space>
                 <ShowButton hideText size="small" recordItemId={record.id} />
                 <EditButton hideText size="small" recordItemId={record.id} />
-                {record.status === VoucherStatus.VALID && (
+                {/* {record.status === VoucherStatus.VALID && (
                   <Button
                     size="small"
                     type="primary"
@@ -135,7 +140,7 @@ export const VoucherList: React.FC = () => {
                   >
                     Revoke
                   </Button>
-                )}
+                )} */}
                 {record.status === VoucherStatus.REVOKED && (
                   <Button
                     size="small"
@@ -147,11 +152,11 @@ export const VoucherList: React.FC = () => {
                     Activate
                   </Button>
                 )}
-                <DeleteButton
-                  hideText
+                <Button
+                  danger
+                  icon={<DeleteOutlined />}
                   size="small"
-                  recordItemId={record.id}
-                  onSuccess={() => handleDelete(record.id)}
+                  onClick={() => handleDelete(record.id)}
                 />
               </Space>
             )}

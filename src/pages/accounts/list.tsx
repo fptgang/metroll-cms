@@ -18,6 +18,7 @@ import {
 import { UserOutlined, SearchOutlined } from "@ant-design/icons";
 import { AccountDto, AccountRole } from "../../data";
 import { useAccounts, useDeleteAccount } from "../../hooks";
+import { formatDate } from "../../utils/formatDate";
 
 export const AccountList: React.FC = () => {
   const [page, setPage] = useState(0);
@@ -89,7 +90,7 @@ export const AccountList: React.FC = () => {
           <Table.Column
             dataIndex="createdAt"
             title="Created At"
-            render={(value) => new Date(value).toLocaleDateString()}
+            render={(value) => formatDate(value)}
           />
           <Table.Column
             title="Actions"

@@ -18,10 +18,10 @@ import {
 } from "../interfaces";
 
 export class TicketService extends BaseService {
-  private readonly endpoint = "/ticket/tickets";
-  private readonly validationEndpoint = "/ticket/ticket-validations";
-  private readonly journeyEndpoint = "/ticket/p2p-journeys";
-  private readonly planEndpoint = "/ticket/timed-ticket-plans";
+  private readonly endpoint = "/tickets";
+  private readonly validationEndpoint = "/ticket-validations";
+  private readonly journeyEndpoint = "/p2p-journeys";
+  private readonly planEndpoint = "/timed-ticket-plans";
 
   constructor() {
     super();
@@ -88,6 +88,14 @@ export class TicketService extends BaseService {
       await this.put<void>(`${this.endpoint}/${id}/status`, null, {
         params: { status },
       });
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async getTicketQRCode(id: string): Promise<string> {
+    try {
+      return await this.get<string>(`${this.endpoint}/${id}/qrcode`);
     } catch (error) {
       throw this.handleError(error);
     }

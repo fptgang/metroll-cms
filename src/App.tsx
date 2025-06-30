@@ -2,7 +2,6 @@ import { GitHubBanner, Refine, WelcomePage } from "@refinedev/core";
 import { DevtoolsPanel, DevtoolsProvider } from "@refinedev/devtools";
 import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
 import {
-  AuthPage,
   ErrorComponent,
   ThemedLayoutV2,
   ThemedSiderV2,
@@ -13,6 +12,10 @@ import {
   UserOutlined,
   DashboardOutlined,
   TagOutlined,
+  MergeOutlined,
+  EnvironmentOutlined,
+  ContactsOutlined,
+  ShoppingCartOutlined,
 } from "@ant-design/icons";
 
 import routerBindings, {
@@ -50,8 +53,28 @@ import { P2PJourneyList } from "./pages/p2p-journeys/list";
 import { P2PJourneyCreate } from "./pages/p2p-journeys/create";
 import { TimedTicketPlanList } from "./pages/timed-ticket-plans/list";
 import { TimedTicketPlanCreate } from "./pages/timed-ticket-plans/create";
+import {
+  StationList,
+  StationCreate,
+  StationEdit,
+  StationShow,
+} from "./pages/stations";
+import {
+  MetroLineList,
+  MetroLineCreate,
+  MetroLineEdit,
+  MetroLineShow,
+} from "./pages/metro-lines";
+import { OrderList, OrderShow, OrderCreate, OrderEdit } from "./pages/orders";
+import { FirebaseLoginPage } from "./pages/auth/login";
 
 import "./App.css";
+import {
+  TimedTicketPlanEdit,
+  TimedTicketPlanShow,
+} from "./pages/timed-ticket-plans";
+import { P2PJourneyEdit, P2PJourneyShow } from "./pages/p2p-journeys";
+import { TicketEdit, TicketShow } from "./pages/tickets";
 
 function App() {
   return (
@@ -90,6 +113,7 @@ function App() {
                       meta: {
                         label: "Accounts",
                         icon: <UserOutlined />,
+                        parent: "Account Management",
                         canDelete: true,
                       },
                     },
@@ -101,7 +125,8 @@ function App() {
                       show: "/tickets/show/:id",
                       meta: {
                         label: "Tickets",
-                        icon: <TagOutlined />,
+                        icon: <ContactsOutlined />,
+                        parent: "Ticket Management",
                         canDelete: true,
                       },
                     },
@@ -114,6 +139,7 @@ function App() {
                       meta: {
                         label: "Vouchers",
                         icon: <TagOutlined />,
+                        parent: "Account Management",
                         canDelete: true,
                       },
                     },
@@ -126,6 +152,7 @@ function App() {
                       meta: {
                         label: "P2P Journeys",
                         icon: <TagOutlined />,
+                        parent: "Ticket Management",
                         canDelete: true,
                       },
                     },
@@ -138,6 +165,46 @@ function App() {
                       meta: {
                         label: "Timed Ticket Plans",
                         icon: <TagOutlined />,
+                        parent: "Ticket Management",
+                        canDelete: true,
+                      },
+                    },
+                    {
+                      name: "station",
+                      list: "/stations",
+                      create: "/stations/create",
+                      edit: "/stations/edit/:id",
+                      show: "/stations/show/:id",
+                      meta: {
+                        label: "Stations",
+                        icon: <EnvironmentOutlined />,
+                        parent: "Subway Management",
+                        canDelete: true,
+                      },
+                    },
+                    {
+                      name: "metro-line",
+                      list: "/metro-lines",
+                      create: "/metro-lines/create",
+                      edit: "/metro-lines/edit/:id",
+                      show: "/metro-lines/show/:id",
+                      meta: {
+                        label: "Metro Lines",
+                        icon: <MergeOutlined />,
+                        parent: "Subway Management",
+                        canDelete: true,
+                      },
+                    },
+                    {
+                      name: "orders",
+                      list: "/orders",
+                      create: "/orders/create",
+                      edit: "/orders/edit/:orderNumber",
+                      show: "/orders/show/:orderNumber",
+                      meta: {
+                        label: "Orders",
+                        icon: <ShoppingCartOutlined />,
+                        parent: "Order Management",
                         canDelete: true,
                       },
                     },
@@ -177,14 +244,8 @@ function App() {
                       <Route path="/tickets">
                         <Route index element={<TicketList />} />
                         <Route path="create" element={<TicketCreate />} />
-                        <Route
-                          path="edit/:id"
-                          element={<div>Ticket Edit</div>}
-                        />
-                        <Route
-                          path="show/:id"
-                          element={<div>Ticket Show</div>}
-                        />
+                        <Route path="edit/:id" element={<TicketEdit />} />
+                        <Route path="show/:id" element={<TicketShow />} />
                       </Route>
 
                       {/* Voucher Routes */}
@@ -199,14 +260,8 @@ function App() {
                       <Route path="/p2p-journeys">
                         <Route index element={<P2PJourneyList />} />
                         <Route path="create" element={<P2PJourneyCreate />} />
-                        <Route
-                          path="edit/:id"
-                          element={<div>P2P Journey Edit</div>}
-                        />
-                        <Route
-                          path="show/:id"
-                          element={<div>P2P Journey Show</div>}
-                        />
+                        <Route path="edit/:id" element={<P2PJourneyEdit />} />
+                        <Route path="show/:id" element={<P2PJourneyShow />} />
                       </Route>
 
                       {/* Timed Ticket Plan Routes */}
@@ -218,32 +273,48 @@ function App() {
                         />
                         <Route
                           path="edit/:id"
-                          element={<div>Timed Ticket Plan Edit</div>}
+                          element={<TimedTicketPlanEdit />}
                         />
                         <Route
                           path="show/:id"
-                          element={<div>Timed Ticket Plan Show</div>}
+                          element={<TimedTicketPlanShow />}
+                        />
+                      </Route>
+
+                      {/* Station Routes */}
+                      <Route path="/stations">
+                        <Route index element={<StationList />} />
+                        <Route path="create" element={<StationCreate />} />
+                        <Route path="edit/:id" element={<StationEdit />} />
+                        <Route path="show/:id" element={<StationShow />} />
+                      </Route>
+
+                      {/* Metro Line Routes */}
+                      <Route path="/metro-lines">
+                        <Route index element={<MetroLineList />} />
+                        <Route path="create" element={<MetroLineCreate />} />
+                        <Route path="edit/:id" element={<MetroLineEdit />} />
+                        <Route path="show/:id" element={<MetroLineShow />} />
+                      </Route>
+
+                      {/* Order Routes */}
+                      <Route path="/orders">
+                        <Route index element={<OrderList />} />
+                        <Route path="create" element={<OrderCreate />} />
+                        <Route
+                          path="edit/:orderNumber"
+                          element={<OrderEdit />}
+                        />
+                        <Route
+                          path="show/:orderNumber"
+                          element={<OrderShow />}
                         />
                       </Route>
 
                       <Route path="*" element={<ErrorComponent />} />
                     </Route>
 
-                    <Route
-                      element={
-                        <AuthPage
-                          type="login"
-                          title="Metroll CMS"
-                          formProps={{
-                            initialValues: {
-                              email: "admin@metroll.com",
-                              password: "password123",
-                            },
-                          }}
-                        />
-                      }
-                      path="/login"
-                    />
+                    <Route element={<FirebaseLoginPage />} path="/login" />
                     <Route
                       element={<CatchAllNavigate to="/dashboard" />}
                       path="*"

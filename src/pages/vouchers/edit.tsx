@@ -5,6 +5,7 @@ import { VoucherUpdateRequest, VoucherStatus } from "../../data";
 import { useVoucher, useUpdateVoucher } from "../../hooks";
 import { useParams, useNavigate } from "react-router";
 import dayjs from "dayjs";
+import { formatDate } from "../../utils/formatDate";
 
 const { RangePicker } = DatePicker;
 
@@ -27,7 +28,8 @@ export const VoucherEdit: React.FC = () => {
   const onFinish = async (values: any) => {
     const { dateRange, ...rest } = values;
     const voucherData: VoucherUpdateRequest = {
-      ...rest,
+      discountAmount: rest.discountAmount,
+      minTransactionAmount: rest.minTransactionAmount,
       validFrom: dateRange[0].toISOString(),
       validUntil: dateRange[1].toISOString(),
     };
@@ -52,35 +54,9 @@ export const VoucherEdit: React.FC = () => {
     >
       <Form form={form} onFinish={onFinish} layout="vertical">
         <Card title="Edit Voucher">
-          <Form.Item
-            label="Owner ID"
-            name="ownerId"
-            rules={[
-              {
-                required: true,
-                message: "Please enter the owner ID",
-              },
-            ]}
-          >
-            <Input placeholder="Enter owner account ID" />
+          <Form.Item label="Owner ID" name="ownerId">
+            <Input disabled />
           </Form.Item>
-
-          <Form.Item
-            label="Voucher Code"
-            name="code"
-            rules={[
-              {
-                required: true,
-                message: "Please enter the voucher code",
-              },
-            ]}
-          >
-            <Input
-              placeholder="Enter voucher code"
-              style={{ fontFamily: "monospace" }}
-            />
-          </Form.Item>
-
           <Form.Item
             label="Discount Amount"
             name="discountAmount"
@@ -132,31 +108,6 @@ export const VoucherEdit: React.FC = () => {
           </Form.Item>
 
           <Form.Item
-            label="Status"
-            name="status"
-            rules={[
-              {
-                required: true,
-                message: "Please select the status",
-              },
-            ]}
-          >
-            <Select placeholder="Select status">
-              <Select.Option value={VoucherStatus.PRESERVED}>
-                Preserved
-              </Select.Option>
-              <Select.Option value={VoucherStatus.VALID}>Valid</Select.Option>
-              <Select.Option value={VoucherStatus.USED}>Used</Select.Option>
-              <Select.Option value={VoucherStatus.EXPIRED}>
-                Expired
-              </Select.Option>
-              <Select.Option value={VoucherStatus.REVOKED}>
-                Revoked
-              </Select.Option>
-            </Select>
-          </Form.Item>
-
-          <Form.Item
             label="Validity Period"
             name="dateRange"
             rules={[
@@ -171,7 +122,26 @@ export const VoucherEdit: React.FC = () => {
               showTime
               format="YYYY-MM-DD HH:mm:ss"
               placeholder={["Valid From", "Valid Until"]}
+              defaultValue={[
+                dayjs(formatDate(voucher?.validFrom || "")),
+                dayjs(formatDate(voucher?.validUntil || "")),
+              ]}
             />
+          </Form.Item>
+          <Form.Item label="Status" name="status">
+            <Select disabled placeholder="Select status">
+              <Select.Option value={VoucherStatus.PRESERVED}>
+                Preserved
+              </Select.Option>
+              <Select.Option value={VoucherStatus.VALID}>Valid</Select.Option>
+              <Select.Option value={VoucherStatus.USED}>Used</Select.Option>
+              <Select.Option value={VoucherStatus.EXPIRED}>
+                Expired
+              </Select.Option>
+              <Select.Option value={VoucherStatus.REVOKED}>
+                Revoked
+              </Select.Option>
+            </Select>
           </Form.Item>
         </Card>
       </Form>

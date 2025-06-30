@@ -13,7 +13,7 @@ import {
 import { auth } from "../../utils/firebase";
 
 export class AccountService extends BaseService {
-  private readonly endpoint = "/account/accounts";
+  private readonly endpoint = "/accounts";
 
   constructor() {
     super();

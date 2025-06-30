@@ -1,8 +1,19 @@
 import React, { useState } from "react";
 import { Create } from "@refinedev/antd";
-import { Form, Input, InputNumber, DatePicker, Card, Button } from "antd";
+import {
+  Form,
+  Input,
+  InputNumber,
+  DatePicker,
+  Card,
+  Button,
+  Select,
+  Spin,
+  Alert,
+} from "antd";
 import { VoucherCreateRequest } from "../../data";
 import { useCreateVoucher } from "../../hooks";
+import { useAccounts } from "../../hooks";
 import { useNavigate } from "react-router";
 import dayjs from "dayjs";
 
@@ -13,6 +24,13 @@ export const VoucherCreate: React.FC = () => {
   const createMutation = useCreateVoucher();
   const navigate = useNavigate();
   const [generatedCode, setGeneratedCode] = useState<string>("");
+
+  // Fetch accounts for the dropdown list
+  const {
+    data: accountsData,
+    isLoading: isAccountsLoading,
+    error: accountsError,
+  } = useAccounts(0, 100); // Fetch up to 100 accounts
 
   const generateVoucherCode = () => {
     const timestamp = Date.now().toString(36).toUpperCase();
@@ -47,37 +65,49 @@ export const VoucherCreate: React.FC = () => {
       <Form form={form} onFinish={onFinish} layout="vertical">
         <Card title="Create New Voucher">
           <Form.Item
-            label="Owner ID"
-            name="ownerId"
+            label="Select Owners"
+            name="ownerIds"
             rules={[
               {
                 required: true,
-                message: "Please enter the owner ID",
+                message: "Please select at least one owner",
               },
             ]}
           >
-            <Input placeholder="Enter owner account ID" />
-          </Form.Item>
-
-          <Form.Item
-            label="Voucher Code"
-            name="code"
-            rules={[
-              {
-                required: true,
-                message: "Please enter or generate a voucher code",
-              },
-            ]}
-            extra={
-              <Button type="dashed" onClick={generateVoucherCode}>
-                Generate Code
-              </Button>
-            }
-          >
-            <Input
-              placeholder="Enter voucher code or click generate"
-              value={generatedCode}
-              style={{ fontFamily: "monospace" }}
+            <Select
+              mode="multiple"
+              style={{ width: "100%" }}
+              placeholder="Select users as voucher owners"
+              loading={isAccountsLoading}
+              showSearch
+              filterOption={(input, option) =>
+                (option?.label ?? "")
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+              }
+              maxTagCount="responsive"
+              dropdownStyle={{ maxHeight: 300 }}
+              notFoundContent={
+                accountsError ? (
+                  <Alert
+                    message="Error loading accounts"
+                    description="Failed to load user accounts. Please try again."
+                    type="error"
+                    showIcon={false}
+                    style={{ margin: 8 }}
+                  />
+                ) : isAccountsLoading ? (
+                  <Spin size="small" />
+                ) : (
+                  "No accounts found"
+                )
+              }
+              options={
+                accountsData?.content?.map((account) => ({
+                  label: `${account.fullName} (${account.email})`,
+                  value: account.id,
+                })) || []
+              }
             />
           </Form.Item>
 

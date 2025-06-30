@@ -5,6 +5,7 @@ import { DollarOutlined } from "@ant-design/icons";
 import { useVoucher } from "../../hooks";
 import { useParams } from "react-router";
 import { VoucherStatus } from "../../data";
+import { formatDate } from "../../utils/formatDate";
 
 const { Title, Text } = Typography;
 
@@ -91,11 +92,11 @@ export const VoucherShow: React.FC = () => {
         <Row gutter={[16, 16]}>
           <Col span={12}>
             <Title level={5}>Valid From</Title>
-            <Text>{new Date(voucher.validFrom).toLocaleString()}</Text>
+            <Text>{formatDate(voucher.validFrom)}</Text>
           </Col>
           <Col span={12}>
             <Title level={5}>Valid Until</Title>
-            <Text>{new Date(voucher.validUntil).toLocaleString()}</Text>
+            <Text>{formatDate(voucher.validUntil)}</Text>
           </Col>
         </Row>
 
@@ -104,13 +105,13 @@ export const VoucherShow: React.FC = () => {
         <Row gutter={[16, 16]}>
           <Col span={12}>
             <Title level={5}>Created At</Title>
-            <Text>{new Date(voucher.createdAt).toLocaleString()}</Text>
+            <Text>{formatDate(voucher.createdAt)}</Text>
           </Col>
           <Col span={12}>
             <Title level={5}>Updated At</Title>
             <Text>
               {voucher.updatedAt
-                ? new Date(voucher.updatedAt).toLocaleString()
+                ? formatDate(voucher.updatedAt)
                 : "Not updated"}
             </Text>
           </Col>

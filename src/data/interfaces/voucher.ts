@@ -14,7 +14,7 @@ export interface VoucherDto extends BaseEntity {
 
 // Voucher Create Request
 export interface VoucherCreateRequest {
-  ownerId: string;
+  ownerIds: string[];
   code: string;
   discountAmount: number;
   minTransactionAmount: number;
@@ -24,13 +24,13 @@ export interface VoucherCreateRequest {
 
 // Voucher Update Request
 export interface VoucherUpdateRequest {
-  ownerId?: string;
-  code?: string;
+  // ownerId?: string;
+  // code?: string;
   discountAmount?: number;
   minTransactionAmount?: number;
   validFrom?: string;
   validUntil?: string;
-  status?: VoucherStatus;
+  // status?: VoucherStatus;
 }
 
 // Voucher Summary for Dashboard

@@ -1,13 +1,15 @@
-import React from "react";
-import { Create } from "@refinedev/antd";
+import React, { useEffect } from "react";
+import { Edit } from "@refinedev/antd";
 import { Form, Input, InputNumber, Card, Select } from "antd";
-import { TimedTicketPlanCreateRequest } from "../../data";
-import { useCreateTimedTicketPlan } from "../../hooks";
-import { useNavigate } from "react-router";
+import { TimedTicketPlanUpdateRequest } from "../../data";
+import { useTimedTicketPlan, useUpdateTimedTicketPlan } from "../../hooks";
+import { useParams, useNavigate } from "react-router";
 
-export const TimedTicketPlanCreate: React.FC = () => {
+export const TimedTicketPlanEdit: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
   const [form] = Form.useForm();
-  const createMutation = useCreateTimedTicketPlan();
+  const { data: plan, isLoading } = useTimedTicketPlan(id!);
+  const updateMutation = useUpdateTimedTicketPlan();
   const navigate = useNavigate();
 
   const durationOptions = [
@@ -20,23 +22,37 @@ export const TimedTicketPlanCreate: React.FC = () => {
     { label: "1 year", value: 365 },
   ];
 
-  const onFinish = async (values: TimedTicketPlanCreateRequest) => {
-    createMutation.mutate(values, {
-      onSuccess: () => {
-        navigate("/timed-ticket-plans");
-      },
-    });
+  useEffect(() => {
+    if (plan) {
+      form.setFieldsValue({
+        name: plan.name,
+        validDuration: plan.validDuration,
+        basePrice: plan.basePrice,
+      });
+    }
+  }, [plan, form]);
+
+  const onFinish = async (values: TimedTicketPlanUpdateRequest) => {
+    updateMutation.mutate(
+      { id: id!, data: values },
+      {
+        onSuccess: () => {
+          navigate("/timed-ticket-plans");
+        },
+      }
+    );
   };
 
   return (
-    <Create
+    <Edit
+      isLoading={isLoading}
       saveButtonProps={{
-        loading: createMutation.isPending,
+        loading: updateMutation.isPending,
         onClick: () => form.submit(),
       }}
     >
       <Form form={form} onFinish={onFinish} layout="vertical">
-        <Card title="Create New Timed Ticket Plan">
+        <Card title="Edit Timed Ticket Plan">
           <Form.Item
             label="Plan Name"
             name="name"
@@ -98,6 +114,6 @@ export const TimedTicketPlanCreate: React.FC = () => {
           </Form.Item>
         </Card>
       </Form>
-    </Create>
+    </Edit>
   );
 };
