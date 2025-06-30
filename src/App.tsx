@@ -77,6 +77,7 @@ import {
 } from "./pages/timed-ticket-plans";
 import { P2PJourneyEdit, P2PJourneyShow } from "./pages/p2p-journeys";
 import { TicketEdit, TicketShow } from "./pages/tickets";
+import { Dashboard } from "./pages/dashboard";
 
 function App() {
   return (
@@ -237,11 +238,11 @@ function App() {
                         </ThemedLayoutV2>
                       }
                     >
-                      <Route
+                      {/* <Route
                         index
                         element={<NavigateToResource resource="dashboard" />}
-                      />
-                      <Route path="/dashboard" element={<WelcomePage />} />
+                      /> */}
+                      <Route index element={<Dashboard />} />
 
                       {/* Account Routes */}
                       <Route path="/accounts">

@@ -10,6 +10,7 @@ import {
   PageDto,
   PageableDto,
   StationAssignmentRequest,
+  AccountDashboard,
 } from "../interfaces";
 import { auth } from "../../utils/firebase";
 
@@ -206,5 +207,12 @@ export class AccountService extends BaseService {
       `${this.endpoint}/${staffId}/assign-station`,
       request
     );
+  }
+
+  /**
+   * Get account dashboard metrics
+   */
+  async getAccountDashboard(): Promise<AccountDashboard> {
+    return this.get<AccountDashboard>(`${this.endpoint}/dashboard`);
   }
 }
