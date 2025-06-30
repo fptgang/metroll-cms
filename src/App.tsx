@@ -16,6 +16,7 @@ import {
   EnvironmentOutlined,
   ContactsOutlined,
   ShoppingCartOutlined,
+  TeamOutlined,
 } from "@ant-design/icons";
 
 import routerBindings, {
@@ -66,6 +67,7 @@ import {
   MetroLineShow,
 } from "./pages/metro-lines";
 import { OrderList, OrderShow, OrderCreate, OrderEdit } from "./pages/orders";
+import { StaffList } from "./pages/staff";
 import { FirebaseLoginPage } from "./pages/auth/login";
 
 import "./App.css";
@@ -141,6 +143,15 @@ function App() {
                         icon: <TagOutlined />,
                         parent: "Account Management",
                         canDelete: true,
+                      },
+                    },
+                    {
+                      name: "staff",
+                      list: "/staff",
+                      meta: {
+                        label: "Staff",
+                        icon: <TeamOutlined />,
+                        parent: "Account Management",
                       },
                     },
                     {
@@ -254,6 +265,11 @@ function App() {
                         <Route path="create" element={<VoucherCreate />} />
                         <Route path="edit/:id" element={<VoucherEdit />} />
                         <Route path="show/:id" element={<VoucherShow />} />
+                      </Route>
+
+                      {/* Staff Routes */}
+                      <Route path="/staff">
+                        <Route index element={<StaffList />} />
                       </Route>
 
                       {/* P2P Journey Routes */}

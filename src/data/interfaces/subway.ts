@@ -22,7 +22,7 @@ export interface LineStationInfoDto {
 }
 
 export interface StationDto {
-  id: string;
+  id?: string;
   code: string;
   name: string;
   address: string;
@@ -31,8 +31,8 @@ export interface StationDto {
   status: StationStatus;
   description?: string;
   lineStationInfos: LineStationInfoDto[];
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface StationQueryParam {

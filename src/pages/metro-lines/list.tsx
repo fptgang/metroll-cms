@@ -231,6 +231,7 @@ export const MetroLineList: React.FC = () => {
               allowClear
               className="min-w-40"
               onChange={handleStatusFilter}
+              defaultValue={LineStatus.OPERATIONAL}
             >
               <Option value={LineStatus.OPERATIONAL}>
                 <Tag color="green">Operational</Tag>
