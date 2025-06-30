@@ -16,6 +16,7 @@ import {
   EnvironmentOutlined,
   ContactsOutlined,
   ShoppingCartOutlined,
+  TeamOutlined,
 } from "@ant-design/icons";
 
 import routerBindings, {
@@ -66,6 +67,7 @@ import {
   MetroLineShow,
 } from "./pages/metro-lines";
 import { OrderList, OrderShow, OrderCreate, OrderEdit } from "./pages/orders";
+import { StaffList } from "./pages/staff";
 import { FirebaseLoginPage } from "./pages/auth/login";
 
 import "./App.css";
@@ -75,6 +77,7 @@ import {
 } from "./pages/timed-ticket-plans";
 import { P2PJourneyEdit, P2PJourneyShow } from "./pages/p2p-journeys";
 import { TicketEdit, TicketShow } from "./pages/tickets";
+import { Dashboard } from "./pages/dashboard";
 
 function App() {
   return (
@@ -141,6 +144,15 @@ function App() {
                         icon: <TagOutlined />,
                         parent: "Account Management",
                         canDelete: true,
+                      },
+                    },
+                    {
+                      name: "staff",
+                      list: "/staff",
+                      meta: {
+                        label: "Staff",
+                        icon: <TeamOutlined />,
+                        parent: "Account Management",
                       },
                     },
                     {
@@ -226,11 +238,11 @@ function App() {
                         </ThemedLayoutV2>
                       }
                     >
-                      <Route
+                      {/* <Route
                         index
                         element={<NavigateToResource resource="dashboard" />}
-                      />
-                      <Route path="/dashboard" element={<WelcomePage />} />
+                      /> */}
+                      <Route index element={<Dashboard />} />
 
                       {/* Account Routes */}
                       <Route path="/accounts">
@@ -254,6 +266,11 @@ function App() {
                         <Route path="create" element={<VoucherCreate />} />
                         <Route path="edit/:id" element={<VoucherEdit />} />
                         <Route path="show/:id" element={<VoucherShow />} />
+                      </Route>
+
+                      {/* Staff Routes */}
+                      <Route path="/staff">
+                        <Route index element={<StaffList />} />
                       </Route>
 
                       {/* P2P Journey Routes */}

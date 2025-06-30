@@ -15,6 +15,7 @@ import {
   PageDto,
   PageableDto,
   TicketStatus,
+  TicketDashboard,
 } from "../interfaces";
 
 export class TicketService extends BaseService {
@@ -363,6 +364,17 @@ export class TicketService extends BaseService {
   async bulkUpdateStatus(ids: string[], status: TicketStatus): Promise<void> {
     try {
       await Promise.all(ids.map((id) => this.updateTicketStatus(id, status)));
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * Get ticket dashboard metrics
+   */
+  async getTicketDashboard(): Promise<TicketDashboard> {
+    try {
+      return await this.get<TicketDashboard>(`${this.endpoint}/dashboard`);
     } catch (error) {
       throw this.handleError(error);
     }

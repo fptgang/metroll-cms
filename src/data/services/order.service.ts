@@ -14,10 +14,11 @@ import {
   PageDto,
   PageableDto,
   SortDirection,
+  OrderDashboard,
 } from "../interfaces";
 
 export class OrderService extends BaseService {
-  private readonly orderPath = "/orders/v1";
+  private readonly orderPath = "/orders";
 
   constructor() {
     super();
@@ -174,45 +175,10 @@ export class OrderService extends BaseService {
   }
 
   /**
-   * Get order statistics for dashboard
+   * Get order dashboard metrics
    */
-  async getDashboardStats(): Promise<{
-    totalOrders: number;
-    pendingOrders: number;
-    completedOrders: number;
-    totalRevenue: number;
-  }> {
-    // This would be a dedicated endpoint in a real implementation
-    // For now, we'll simulate it by getting analytics for the current month
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-
-    try {
-      const analytics = await this.getAnalytics({
-        dateFrom: startOfMonth.toISOString().split("T")[0],
-        dateTo: now.toISOString().split("T")[0],
-        groupBy: "month",
-      });
-
-      if (analytics.analytics.length > 0) {
-        const monthData = analytics.analytics[0];
-        return {
-          totalOrders: monthData.totalOrders,
-          pendingOrders: monthData.statusBreakdown.PENDING || 0,
-          completedOrders: monthData.statusBreakdown.COMPLETED || 0,
-          totalRevenue: monthData.totalRevenue,
-        };
-      }
-    } catch (error) {
-      console.warn("Failed to fetch analytics, returning default stats");
-    }
-
-    return {
-      totalOrders: 0,
-      pendingOrders: 0,
-      completedOrders: 0,
-      totalRevenue: 0,
-    };
+  async getOrderDashboard(): Promise<OrderDashboard> {
+    return this.get<OrderDashboard>(`${this.orderPath}/dashboard`);
   }
 }
 

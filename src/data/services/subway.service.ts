@@ -9,6 +9,7 @@ import {
   MetroLineFilter,
   PageDto,
   PageableDto,
+  SubwayDashboard,
 } from "../interfaces";
 
 export class SubwayService extends BaseService {
@@ -154,6 +155,13 @@ export class SubwayService extends BaseService {
       { status: "OPERATIONAL" as any }
     );
     return result.content;
+  }
+
+  /**
+   * Get subway dashboard metrics
+   */
+  async getSubwayDashboard(): Promise<SubwayDashboard> {
+    return this.get<SubwayDashboard>(`${this.linePath}/dashboard`);
   }
 }
 

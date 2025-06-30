@@ -16,5 +16,8 @@ export * from "./subway";
 // Order interfaces
 export * from "./order";
 
+// Dashboard interfaces
+export * from "./dashboard";
+
 // Enums and types
 export * from "../types/enums";

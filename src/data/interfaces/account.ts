@@ -8,6 +8,7 @@ export interface AccountDto extends BaseEntity {
   phoneNumber: string;
   role: AccountRole;
   active: boolean;
+  assignedStation?: string;
 }
 
 // Account Create Request - mirrors account service create request
@@ -56,4 +57,8 @@ export interface AccountFilter {
   active?: boolean;
   createdAfter?: string;
   createdBefore?: string;
+}
+
+export interface StationAssignmentRequest {
+  stationCode: string;
 }

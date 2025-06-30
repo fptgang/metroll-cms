@@ -9,6 +9,8 @@ import {
   LoginResponse,
   PageDto,
   PageableDto,
+  StationAssignmentRequest,
+  AccountDashboard,
 } from "../interfaces";
 import { auth } from "../../utils/firebase";
 
@@ -162,5 +164,55 @@ export class AccountService extends BaseService {
     } catch (error) {
       throw this.handleError(error);
     }
+  }
+
+  /**
+   * Get all staff members
+   */
+  async getStaffs(
+    pageable?: PageableDto,
+    filters?: AccountFilter
+  ): Promise<PageDto<AccountDto>> {
+    try {
+      return this.getPage<AccountDto>(
+        `${this.endpoint}/staff`,
+        pageable,
+        filters
+      );
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  // Search staffs
+  async searchStaffs(
+    query: string,
+    pageable?: PageableDto
+  ): Promise<PageDto<AccountDto>> {
+    try {
+      return await this.getStaffs(pageable, { search: query });
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * Assign station to staff member
+   */
+  async assignStationToStaff(
+    staffId: string,
+    request: StationAssignmentRequest
+  ): Promise<void> {
+    return this.put<void>(
+      `${this.endpoint}/${staffId}/assign-station`,
+      request
+    );
+  }
+
+  /**
+   * Get account dashboard metrics
+   */
+  async getAccountDashboard(): Promise<AccountDashboard> {
+    return this.get<AccountDashboard>(`${this.endpoint}/dashboard`);
   }
 }
