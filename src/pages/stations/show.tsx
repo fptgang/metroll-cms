@@ -153,10 +153,10 @@ export const StationShow: React.FC = () => {
                 </Tag>
               </Descriptions.Item>
               <Descriptions.Item label="Created">
-                {formatDate(station.createdAt)}
+                {formatDate(station?.createdAt || "")}
               </Descriptions.Item>
               <Descriptions.Item label="Last Updated">
-                {formatDate(station.updatedAt)}
+                {formatDate(station?.updatedAt || "")}
               </Descriptions.Item>
             </Descriptions>
           </Card>

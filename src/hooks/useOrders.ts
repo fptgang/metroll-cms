@@ -97,7 +97,7 @@ export const useRecentOrders = (limit = 10) => {
 export const useDashboardStats = () => {
   return useQuery({
     queryKey: ORDER_KEYS.stats(),
-    queryFn: () => orderService.getDashboardStats(),
+    queryFn: () => orderService.getOrderDashboard(),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };

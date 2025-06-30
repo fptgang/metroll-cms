@@ -201,7 +201,7 @@ export const OrderList: React.FC = () => {
           <Card>
             <Statistic
               title="Pending Orders"
-              value={dashboardStats?.pendingOrders || 0}
+              value={dashboardStats?.ordersByStatus.PENDING || 0}
               prefix={<ClockCircleOutlined />}
               valueStyle={{ color: "#fa8c16" }}
               loading={statsLoading}
@@ -212,7 +212,7 @@ export const OrderList: React.FC = () => {
           <Card>
             <Statistic
               title="Completed Orders"
-              value={dashboardStats?.completedOrders || 0}
+              value={dashboardStats?.ordersByStatus.COMPLETED || 0}
               prefix={<CheckCircleOutlined />}
               valueStyle={{ color: "#52c41a" }}
               loading={statsLoading}

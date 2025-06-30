@@ -97,22 +97,6 @@ export const StaffList: React.FC = () => {
     setSelectedStaff(null);
   };
 
-  const getStatusInfo = (record: AccountDto) => {
-    // Handle both status string and active boolean
-    let statusText: string;
-    let isActive: boolean;
-
-    if (record.status) {
-      statusText = record.status;
-      isActive = record.status.toLowerCase() === "active";
-    } else {
-      isActive = record.active;
-      statusText = isActive ? "Active" : "Inactive";
-    }
-
-    return { statusText, isActive };
-  };
-
   const getStatusColor = (isActive: boolean, statusText: string) => {
     if (statusText.toLowerCase() === "pending") return "orange";
     return isActive ? "green" : "red";
@@ -134,9 +118,6 @@ export const StaffList: React.FC = () => {
           <Avatar size={40} icon={<UserOutlined />} className="bg-blue-500" />
           <div>
             <div className="font-semibold text-gray-900">{record.fullName}</div>
-            <div className="text-sm text-gray-500">
-              {record.username || record.email}
-            </div>
             <div className="text-xs text-gray-400">{record.email}</div>
           </div>
         </div>
@@ -152,23 +133,6 @@ export const StaffList: React.FC = () => {
           {role?.toUpperCase() || "N/A"}
         </Tag>
       ),
-    },
-    {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      width: 120,
-      render: (_: any, record: AccountDto) => {
-        const { statusText, isActive } = getStatusInfo(record);
-        return (
-          <Tag
-            color={getStatusColor(isActive, statusText)}
-            icon={getStatusIcon(isActive, statusText)}
-          >
-            {statusText}
-          </Tag>
-        );
-      },
     },
     {
       title: "Assigned Station",
@@ -345,9 +309,6 @@ export const StaffList: React.FC = () => {
               <div>
                 <div className="font-semibold text-lg">
                   {selectedStaff.fullName}
-                </div>
-                <div className="text-sm text-gray-500">
-                  {selectedStaff.username}
                 </div>
                 <div className="text-xs text-gray-400">
                   {selectedStaff.email}
