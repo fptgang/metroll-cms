@@ -3,11 +3,11 @@
 // Order Enums and Types
 export enum OrderStatus {
   PENDING = "PENDING",
-  PAID = "PAID",
-  PROCESSING = "PROCESSING",
+  // PAID = "PAID",
+  // PROCESSING = "PROCESSING",
   COMPLETED = "COMPLETED",
-  CANCELLED = "CANCELLED",
-  REFUNDED = "REFUNDED",
+  // CANCELLED = "CANCELLED",
+  // REFUNDED = "REFUNDED",
   FAILED = "FAILED",
 }
 
@@ -17,6 +17,7 @@ export enum PaymentMethod {
   DIGITAL_WALLET = "DIGITAL_WALLET",
   BANK_TRANSFER = "BANK_TRANSFER",
   CASH = "CASH",
+  PAYOS = "PAYOS",
 }
 
 export enum PaymentStatus {
@@ -67,8 +68,7 @@ export interface TicketReferenceDto {
 export interface OrderDetailDto {
   id: string;
   orderId: string;
-  productType: string;
-  productId: string;
+  ticketId: string;
   productName: string;
   productDescription?: string;
   unitPrice: number;
@@ -79,6 +79,8 @@ export interface OrderDetailDto {
   endStationId?: string;
   validityDuration?: number;
   generatedTickets: TicketReferenceDto[];
+  timedTicketPlan: string;
+  p2pJourney: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -90,16 +92,18 @@ export interface OrderDto {
   customerInfo: CustomerInfoDto;
   orderType: OrderType;
   status: OrderStatus;
-  subtotal: number;
-  discountAmount: number;
+  baseTotal: number;
+  discountTotal: number;
   taxAmount: number;
-  totalAmount: number;
+  finalTotal: number;
+  discountPackage: string;
   currency: string;
   paymentMethod?: PaymentMethod;
   paymentStatus: PaymentStatus;
   paymentReference?: string;
   orderDetails: OrderDetailDto[];
   appliedVouchers: AppliedVoucherDto[];
+  voucher?: string;
   orderDate: string;
   paymentDate?: string;
   completionDate?: string;

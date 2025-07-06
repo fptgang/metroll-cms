@@ -4,12 +4,12 @@ import { VoucherStatus } from "../types/enums";
 // Voucher DTO - mirrors VoucherDto.java
 export interface VoucherDto extends BaseEntity {
   ownerId: string;
-  code: string;
+  code?: string;
   discountAmount: number;
   minTransactionAmount: number;
-  validFrom: string;
-  validUntil: string;
-  status: VoucherStatus;
+  validFrom?: string;
+  validUntil?: string;
+  status?: VoucherStatus;
 }
 
 // Voucher Create Request

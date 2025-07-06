@@ -23,7 +23,7 @@ export const VoucherShow: React.FC = () => {
     return <div>Voucher not found</div>;
   }
 
-  const getStatusColor = (status: VoucherStatus) => {
+  const getStatusColor = (status: VoucherStatus | null) => {
     switch (status) {
       case VoucherStatus.PRESERVED:
         return "blue";
@@ -49,7 +49,7 @@ export const VoucherShow: React.FC = () => {
               {voucher.code}
             </Title>
             <Tag
-              color={getStatusColor(voucher.status)}
+              color={getStatusColor(voucher.status || null)}
               style={{ fontSize: "16px", padding: "8px 16px" }}
             >
               {voucher.status}
@@ -92,11 +92,11 @@ export const VoucherShow: React.FC = () => {
         <Row gutter={[16, 16]}>
           <Col span={12}>
             <Title level={5}>Valid From</Title>
-            <Text>{formatDate(voucher.validFrom)}</Text>
+            <Text>{formatDate(voucher.validFrom || "")}</Text>
           </Col>
           <Col span={12}>
             <Title level={5}>Valid Until</Title>
-            <Text>{formatDate(voucher.validUntil)}</Text>
+            <Text>{formatDate(voucher.validUntil || "")}</Text>
           </Col>
         </Row>
 

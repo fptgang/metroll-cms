@@ -8,3 +8,4 @@ export * from "./useStaff";
 export * from "./useMetroLines";
 export * from "./useOrders";
 export * from "./useDashboard";
+export * from "./useDiscountPackages";

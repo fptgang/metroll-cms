@@ -19,5 +19,8 @@ export * from "./order";
 // Dashboard interfaces
 export * from "./dashboard";
 
+// Discount interfaces
+export * from "./discount";
+
 // Enums and types
 export * from "../types/enums";

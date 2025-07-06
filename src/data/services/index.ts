@@ -5,6 +5,7 @@ import { TicketService } from "./ticket.service";
 import { VoucherService } from "./voucher.service";
 import { SubwayService } from "./subway.service";
 import { OrderService } from "./order.service";
+import { DiscountService } from "./discount.service";
 
 // Export service classes
 export {
@@ -14,6 +15,7 @@ export {
   VoucherService,
   SubwayService,
   OrderService,
+  DiscountService,
 };
 
 // Create service instances
@@ -22,6 +24,7 @@ export const ticketService = new TicketService();
 export const voucherService = new VoucherService();
 export const subwayService = new SubwayService();
 export const orderService = new OrderService();
+export const discountService = new DiscountService();
 
 // Service factory for dependency injection
 export const services = {
@@ -30,6 +33,7 @@ export const services = {
   voucher: voucherService,
   subway: subwayService,
   order: orderService,
+  discount: discountService,
 } as const;
 
 export type ServiceKeys = keyof typeof services;

@@ -64,7 +64,19 @@ export const MetroLineEdit: React.FC = () => {
         status: metroLine.status,
         description: metroLine.description,
       });
-      setSegments(metroLine.segments || []);
+      if (metroLine.segments) {
+        const segmentsReq: SegmentRequest[] = metroLine.segments.map(
+          (segment) => ({
+            distance: segment.distance,
+            travelTime: segment.travelTime,
+            description: segment.description || "",
+            startStationCode: segment.startStationCode,
+            endStationCode: segment.endStationCode,
+            sequence: segment.sequence,
+          })
+        );
+        setSegments(segmentsReq);
+      }
     }
   }, [metroLine, form]);
 
@@ -84,11 +96,14 @@ export const MetroLineEdit: React.FC = () => {
         color: values.color,
         operatingHours: values.operatingHours,
         status: values.status || LineStatus.PLANNED,
-        description: values.description,
+        description: values.description || "",
         segments: segments,
       };
 
-      await updateMetroLine.mutateAsync({ code: id!, data: metroLineData });
+      await updateMetroLine.mutateAsync({
+        code: metroLine?.id || id!,
+        data: metroLineData,
+      });
       navigate("/metro-lines");
     } catch (error) {
       console.error("Error updating metro line:", error);
@@ -344,6 +359,11 @@ export const MetroLineEdit: React.FC = () => {
                 <Select className="w-full">
                   <Option value={LineStatus.PLANNED}>🔵 Planned</Option>
                   <Option value={LineStatus.OPERATIONAL}>🟢 Operational</Option>
+                  <Option value={LineStatus.UNDER_MAINTENANCE}>
+                    {" "}
+                    🔧 Under Maintenance
+                  </Option>
+                  <Option value={LineStatus.CLOSED}>🔴 Closed</Option>
                 </Select>
               </Form.Item>
             </div>

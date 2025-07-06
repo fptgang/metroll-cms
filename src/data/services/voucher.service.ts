@@ -185,8 +185,8 @@ export class VoucherService extends BaseService {
     try {
       const voucher = await this.getVoucherByCode(code);
       const now = new Date();
-      const validFrom = new Date(voucher.validFrom);
-      const validUntil = new Date(voucher.validUntil);
+      const validFrom = new Date(voucher.validFrom || "");
+      const validUntil = new Date(voucher.validUntil || "");
 
       return (
         voucher.status === VoucherStatus.VALID &&

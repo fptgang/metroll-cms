@@ -14,10 +14,15 @@ import {
   Input,
   Button,
   Pagination,
+  Tooltip,
 } from "antd";
-import { UserOutlined, SearchOutlined } from "@ant-design/icons";
+import { UserOutlined, SearchOutlined, GiftOutlined } from "@ant-design/icons";
 import { AccountDto, AccountRole } from "../../data";
-import { useAccounts, useDeleteAccount } from "../../hooks";
+import {
+  useAccounts,
+  useDeleteAccount,
+  // useAccountDiscountPackageByAccountId,
+} from "../../hooks";
 import { formatDate } from "../../utils/formatDate";
 
 export const AccountList: React.FC = () => {
@@ -92,6 +97,30 @@ export const AccountList: React.FC = () => {
             title="Created At"
             render={(value) => formatDate(value)}
           />
+          {/* <Table.Column
+            dataIndex="discountPackage"
+            title="Discount Package"
+            render={(_, record: AccountDto) => {
+              const { data: discountPackage } =
+                useAccountDiscountPackageByAccountId(record.id);
+              if (discountPackage) {
+                return (
+                  <Tooltip
+                    title={`${discountPackage.discountPackageId} - ${discountPackage.status}`}
+                  >
+                    <Tag color="green" icon={<GiftOutlined />}>
+                      Active
+                    </Tag>
+                  </Tooltip>
+                );
+              }
+              return (
+                <Tag color="default" icon={<GiftOutlined />}>
+                  None
+                </Tag>
+              );
+            }}
+          /> */}
           <Table.Column
             title="Actions"
             dataIndex="actions"

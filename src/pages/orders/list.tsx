@@ -1,7 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   List,
-  useTable,
   DateField,
   TagField,
   TextField,
@@ -49,9 +48,14 @@ import {
   PaymentMethod,
   OrderType,
   OrderFilter,
+  OrderDto,
+  AccountDto,
 } from "../../data/interfaces";
 import { useOrders, useDashboardStats } from "../../hooks";
 import { formatCurrency } from "../../utils/formatCurrency";
+import { accountService } from "../../data";
+import { formatDate } from "../../utils/formatDate";
+import { useNavigate } from "react-router";
 
 const { RangePicker } = DatePicker;
 const { Text } = Typography;
@@ -63,31 +67,31 @@ const statusConfig = {
     icon: <ClockCircleOutlined />,
     text: "Pending",
   },
-  [OrderStatus.PAID]: {
-    color: "blue",
-    icon: <DollarOutlined />,
-    text: "Paid",
-  },
-  [OrderStatus.PROCESSING]: {
-    color: "purple",
-    icon: <ReloadOutlined spin />,
-    text: "Processing",
-  },
+  // [OrderStatus.PAID]: {
+  //   color: "blue",
+  //   icon: <DollarOutlined />,
+  //   text: "Paid",
+  // },
+  // [OrderStatus.PROCESSING]: {
+  //   color: "purple",
+  //   icon: <ReloadOutlined spin />,
+  //   text: "Processing",
+  // },
   [OrderStatus.COMPLETED]: {
     color: "green",
     icon: <CheckCircleOutlined />,
     text: "Completed",
   },
-  [OrderStatus.CANCELLED]: {
-    color: "red",
-    icon: <CloseCircleOutlined />,
-    text: "Cancelled",
-  },
-  [OrderStatus.REFUNDED]: {
-    color: "cyan",
-    icon: <ReloadOutlined />,
-    text: "Refunded",
-  },
+  // [OrderStatus.CANCELLED]: {
+  //   color: "red",
+  //   icon: <CloseCircleOutlined />,
+  //   text: "Cancelled",
+  // },
+  // [OrderStatus.REFUNDED]: {
+  //   color: "cyan",
+  //   icon: <ReloadOutlined />,
+  //   text: "Refunded",
+  // },
   [OrderStatus.FAILED]: {
     color: "red",
     icon: <CloseCircleOutlined />,
@@ -102,6 +106,7 @@ const paymentMethodConfig = {
   [PaymentMethod.DIGITAL_WALLET]: { color: "purple", text: "Digital Wallet" },
   [PaymentMethod.BANK_TRANSFER]: { color: "orange", text: "Bank Transfer" },
   [PaymentMethod.CASH]: { color: "gray", text: "Cash" },
+  [PaymentMethod.PAYOS]: { color: "gold", text: "PayOS" },
 };
 
 // Order type configuration
@@ -113,8 +118,11 @@ const orderTypeConfig = {
 };
 
 export const OrderList: React.FC = () => {
+  const [page, setPage] = useState(0);
+  const [size, setSize] = useState(10);
   const [filters, setFilters] = useState<OrderFilter>({});
-
+  const [accounts, setAccounts] = useState<AccountDto[]>([]);
+  const navigate = useNavigate();
   // Dashboard stats
   const {
     data: dashboardStats,
@@ -122,39 +130,15 @@ export const OrderList: React.FC = () => {
     refetch: refetchStats,
   } = useDashboardStats();
 
-  const { tableProps, searchFormProps, sorters, tableQueryResult } =
-    useTable<OrderSummaryDto>({
-      resource: "orders",
-      onSearch: (values: any) => {
-        const crudFilters: any[] = [];
-
-        if (values.search) {
-          crudFilters.push({
-            field: "search",
-            operator: "contains",
-            value: values.search,
-          });
-        }
-
-        const orderFilters: OrderFilter = {
-          search: values.search,
-          status: values.status,
-          orderType: values.orderType,
-          paymentMethod: values.paymentMethod,
-          orderDateFrom: values.dateRange?.[0]?.format("YYYY-MM-DD"),
-          orderDateTo: values.dateRange?.[1]?.format("YYYY-MM-DD"),
-          minAmount: values.minAmount,
-          maxAmount: values.maxAmount,
-        };
-        setFilters(orderFilters);
-
-        return crudFilters;
-      },
-      syncWithLocation: true,
-    });
+  // Orders data
+  const {
+    data: ordersData,
+    isLoading: ordersLoading,
+    refetch: refetchOrders,
+  } = useOrders({ page, size }, filters);
 
   // Table action items
-  const getActionItems = (record: OrderSummaryDto): MenuProps["items"] => [
+  const getActionItems = (record: OrderDto): MenuProps["items"] => [
     {
       key: "view",
       icon: <EyeOutlined />,
@@ -182,6 +166,26 @@ export const OrderList: React.FC = () => {
       currency: "VND",
     }).format(amount);
   };
+
+  useEffect(() => {
+    if (ordersData && ordersData.content.length > 0) {
+      // Extract unique customer IDs from orders
+      ordersData.content
+        .map((order: OrderDto) => order.customerId)
+        .filter(
+          (customerId: string, index: number, self: string[]) =>
+            // Filter out duplicates and empty IDs
+            customerId &&
+            self.indexOf(customerId) === index &&
+            !accounts.some((acc) => acc.id === customerId)
+        )
+        .forEach((customerId: string) => {
+          accountService
+            .getAccountById(customerId)
+            .then((accounts) => setAccounts((prev) => [...prev, accounts]));
+        });
+    }
+  }, [ordersData]);
 
   return (
     <div className="p-6 space-y-6">
@@ -242,7 +246,7 @@ export const OrderList: React.FC = () => {
               type="primary"
               icon={<ReloadOutlined />}
               onClick={() => {
-                tableQueryResult.refetch();
+                refetchOrders();
                 refetchStats();
               }}
             >
@@ -376,7 +380,7 @@ export const OrderList: React.FC = () => {
             <Button
               icon={<FilterOutlined />}
               onClick={() => {
-                tableQueryResult.refetch();
+                refetchOrders();
               }}
             >
               Apply Filters
@@ -386,52 +390,62 @@ export const OrderList: React.FC = () => {
 
         {/* Orders Table */}
         <Table
-          {...tableProps}
+          dataSource={ordersData?.content || []}
           rowKey="id"
+          loading={ordersLoading}
           scroll={{ x: 1200 }}
           pagination={{
-            ...tableProps.pagination,
+            current: page + 1,
+            pageSize: size,
+            total: ordersData?.totalElements || 0,
             showSizeChanger: true,
             showQuickJumper: true,
             showTotal: (total, range) =>
               `${range[0]}-${range[1]} of ${total} orders`,
+            onChange: (current, pageSize) => {
+              setPage(current - 1);
+              setSize(pageSize || 10);
+            },
           }}
         >
           <Table.Column
-            dataIndex="orderNumber"
-            title="Order Number"
-            sorter
-            defaultSortOrder={getDefaultSortOrder("orderNumber", sorters)}
-            render={(value: string, record: OrderSummaryDto) => (
+            dataIndex="id"
+            title="Order Id"
+            render={(value: string, record: OrderDto) => (
               <Space direction="vertical" size="small">
                 <Text strong>{value}</Text>
                 <Text type="secondary" style={{ fontSize: "12px" }}>
-                  {record.itemCount} item(s)
+                  {record.orderDetails.length} item(s)
                 </Text>
               </Space>
             )}
           />
 
           <Table.Column
-            dataIndex="customerName"
+            dataIndex="customerId"
             title="Customer"
-            sorter
-            defaultSortOrder={getDefaultSortOrder("customerName", sorters)}
-            render={(value: string) => (
-              <Space>
-                <Avatar size="small">{value?.charAt(0)?.toUpperCase()}</Avatar>
-                <Text>{value}</Text>
-              </Space>
-            )}
+            render={(value: string) => {
+              return (
+                <Space>
+                  <Avatar size="small">
+                    {accounts
+                      .find((acc) => acc.id === value)
+                      ?.fullName?.[0].toUpperCase()}
+                  </Avatar>
+                  <Text>
+                    {accounts.find((acc) => acc.id === value)?.fullName}
+                  </Text>
+                </Space>
+              );
+            }}
           />
 
           <Table.Column
             dataIndex="status"
             title="Status"
-            sorter
-            defaultSortOrder={getDefaultSortOrder("status", sorters)}
             render={(value: OrderStatus) => {
               const config = statusConfig[value];
+              if (!config) return <Text type="secondary">-</Text>;
               return (
                 <Tag
                   color={config.color}
@@ -445,10 +459,8 @@ export const OrderList: React.FC = () => {
           />
 
           <Table.Column
-            dataIndex="totalAmount"
+            dataIndex="finalTotal"
             title="Total Amount"
-            sorter
-            defaultSortOrder={getDefaultSortOrder("totalAmount", sorters)}
             render={(value: number) => (
               <Text strong style={{ color: "#1890ff" }}>
                 {formatCurrency(value)}
@@ -462,6 +474,7 @@ export const OrderList: React.FC = () => {
             render={(value: PaymentMethod) => {
               if (!value) return <Text type="secondary">-</Text>;
               const config = paymentMethodConfig[value];
+              if (!config) return <Text type="secondary">-</Text>;
               return (
                 <Tag color={config.color} className="font-medium">
                   {config.text}
@@ -471,26 +484,29 @@ export const OrderList: React.FC = () => {
           />
 
           <Table.Column
-            dataIndex="orderDate"
+            dataIndex="createdAt"
             title="Order Date"
-            sorter
-            defaultSortOrder={getDefaultSortOrder("orderDate", sorters)}
             render={(value: string) => (
-              <DateField value={value} format="MMM DD, YYYY HH:mm" />
+              <DateField
+                value={formatDate(value)}
+                format="MMM DD, YYYY HH:mm"
+              />
             )}
           />
 
           <Table.Column
             title="Actions"
             dataIndex="actions"
-            render={(_: any, record: OrderSummaryDto) => (
+            render={(_: any, record: OrderDto) => (
               <Space>
                 <Tooltip title="View Details">
                   <Button
                     type="primary"
                     icon={<EyeOutlined />}
                     size="small"
-                    href={`/orders/show/${record.orderNumber}`}
+                    onClick={() => {
+                      navigate(`/orders/show/${record.id}`);
+                    }}
                   />
                 </Tooltip>
 
@@ -499,7 +515,9 @@ export const OrderList: React.FC = () => {
                     icon={<EditOutlined />}
                     size="small"
                     disabled={record.status === OrderStatus.COMPLETED}
-                    href={`/orders/edit/${record.orderNumber}`}
+                    onClick={() => {
+                      navigate(`/orders/edit/${record.id}`);
+                    }}
                   />
                 </Tooltip>
 
@@ -509,10 +527,10 @@ export const OrderList: React.FC = () => {
                     onClick: ({ key }) => {
                       switch (key) {
                         case "view":
-                          window.location.href = `/orders/show/${record.orderNumber}`;
+                          window.location.href = `/orders/show/${record.id}`;
                           break;
                         case "edit":
-                          window.location.href = `/orders/edit/${record.orderNumber}`;
+                          window.location.href = `/orders/edit/${record.id}`;
                           break;
                         default:
                           break;

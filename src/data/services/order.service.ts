@@ -33,8 +33,9 @@ export class OrderService extends BaseService {
     pageable?: PageableDto,
     filters?: OrderFilter
   ): Promise<PageDto<OrderSummaryDto>> {
-    return this.post<PageDto<OrderSummaryDto>>(
-      `${this.orderPath}/list`,
+    return this.getPage<OrderSummaryDto>(
+      `${this.orderPath}`,
+      pageable || ({ page: 0, size: 10 } as PageableDto),
       {
         status: filters?.status || "",
         customerId: filters?.customerId || "",
@@ -47,8 +48,7 @@ export class OrderService extends BaseService {
         maxAmount: filters?.maxAmount || null,
         search: filters?.search || "",
         orderNumber: filters?.orderNumber || "",
-      } as OrderQueryParam,
-      { params: pageable || { page: 0, size: 10 } }
+      } as OrderQueryParam
     );
   }
 

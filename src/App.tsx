@@ -17,6 +17,9 @@ import {
   ContactsOutlined,
   ShoppingCartOutlined,
   TeamOutlined,
+  GifOutlined,
+  GiftOutlined,
+  RetweetOutlined,
 } from "@ant-design/icons";
 
 import routerBindings, {
@@ -78,6 +81,18 @@ import {
 import { P2PJourneyEdit, P2PJourneyShow } from "./pages/p2p-journeys";
 import { TicketEdit, TicketShow } from "./pages/tickets";
 import { Dashboard } from "./pages/dashboard";
+import {
+  DiscountPackageCreate,
+  DiscountPackageEdit,
+  DiscountPackageList,
+  DiscountPackageShow,
+} from "./pages/discount-packages";
+import {
+  AccountDiscountPackageList,
+  AccountDiscountPackageAssign,
+  AccountDiscountPackageEdit,
+  AccountDiscountPackageShow,
+} from "./pages/account-discount-packages";
 
 function App() {
   return (
@@ -220,6 +235,32 @@ function App() {
                         canDelete: true,
                       },
                     },
+                    {
+                      name: "discount-packages",
+                      list: "/discount-packages",
+                      create: "/discount-packages/create",
+                      edit: "/discount-packages/edit/:id",
+                      show: "/discount-packages/show/:id",
+                      meta: {
+                        label: "Discount Packages",
+                        icon: <GiftOutlined />,
+                        parent: "Account Management",
+                        canDelete: true,
+                      },
+                    },
+                    {
+                      name: "account-discount-packages",
+                      list: "/account-discount-packages",
+                      create: "/account-discount-packages/assign",
+                      edit: "/account-discount-packages/edit/:id",
+                      show: "/account-discount-packages/show/:id",
+                      meta: {
+                        label: "Account Discount Packages",
+                        icon: <RetweetOutlined />,
+                        parent: "Account Management",
+                        canDelete: true,
+                      },
+                    },
                   ]}
                   options={{
                     syncWithLocation: true,
@@ -271,6 +312,40 @@ function App() {
                       {/* Staff Routes */}
                       <Route path="/staff">
                         <Route index element={<StaffList />} />
+                      </Route>
+
+                      {/* Discount Package Routes */}
+                      <Route path="/discount-packages">
+                        <Route index element={<DiscountPackageList />} />
+                        <Route
+                          path="create"
+                          element={<DiscountPackageCreate />}
+                        />
+                        <Route
+                          path="edit/:id"
+                          element={<DiscountPackageEdit />}
+                        />
+                        <Route
+                          path="show/:id"
+                          element={<DiscountPackageShow />}
+                        />
+                      </Route>
+
+                      {/* Account Discount Package Routes */}
+                      <Route path="/account-discount-packages">
+                        <Route index element={<AccountDiscountPackageList />} />
+                        <Route
+                          path="assign"
+                          element={<AccountDiscountPackageAssign />}
+                        />
+                        <Route
+                          path="edit/:id"
+                          element={<AccountDiscountPackageEdit />}
+                        />
+                        <Route
+                          path="show/:id"
+                          element={<AccountDiscountPackageShow />}
+                        />
                       </Route>
 
                       {/* P2P Journey Routes */}
