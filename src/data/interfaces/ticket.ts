@@ -73,15 +73,22 @@ export interface TicketValidationDto extends BaseEntity {
   ticketId: string;
   validationType: ValidationType;
   validationTime: string;
-  deviceId: string;
+  validatorId: string; // Changed from deviceId to validatorId to match API docs
 }
 
-// Ticket Validation Create Request
+// Ticket Validation Create Request - simplified to match API docs
 export interface TicketValidationCreateRequest {
-  stationId: string;
   ticketId: string;
   validationType: ValidationType;
-  deviceId: string;
+}
+
+// Ticket Validation Filter Options
+export interface TicketValidationFilter {
+  search?: string; // Search term for ticketId, stationId, or validatorId
+  stationCode?: string; // Filter by station code
+  startDate?: string; // Filter validations from this date/time (ISO string)
+  endDate?: string; // Filter validations until this date/time (ISO string)
+  validationType?: ValidationType; // Filter by validation type
 }
 
 // Ticket Summary for Dashboard

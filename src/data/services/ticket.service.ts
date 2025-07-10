@@ -6,6 +6,7 @@ import {
   TicketSummary,
   TicketValidationDto,
   TicketValidationCreateRequest,
+  TicketValidationFilter,
   P2PJourneyDto,
   P2PJourneyCreateRequest,
   P2PJourneyUpdateRequest,
@@ -105,7 +106,7 @@ export class TicketService extends BaseService {
   // Ticket Validation Operations
   async getTicketValidations(
     pageable?: PageableDto,
-    filters?: Record<string, any>
+    filters?: TicketValidationFilter
   ): Promise<PageDto<TicketValidationDto>> {
     try {
       return await this.getPage<TicketValidationDto>(
@@ -134,6 +135,22 @@ export class TicketService extends BaseService {
     try {
       return await this.get<TicketValidationDto[]>(
         `${this.validationEndpoint}/ticket/${ticketId}`
+      );
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async getTicketValidationsByStationCode(
+    stationCode: string,
+    pageable?: PageableDto,
+    filters?: Pick<TicketValidationFilter, "search" | "startDate" | "endDate">
+  ): Promise<PageDto<TicketValidationDto>> {
+    try {
+      return await this.getPage<TicketValidationDto>(
+        `${this.validationEndpoint}/station/${stationCode}`,
+        pageable,
+        filters
       );
     } catch (error) {
       throw this.handleError(error);

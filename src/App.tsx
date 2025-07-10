@@ -20,6 +20,7 @@ import {
   GifOutlined,
   GiftOutlined,
   RetweetOutlined,
+  CheckOutlined,
 } from "@ant-design/icons";
 
 import routerBindings, {
@@ -80,6 +81,10 @@ import {
 } from "./pages/timed-ticket-plans";
 import { P2PJourneyEdit, P2PJourneyShow } from "./pages/p2p-journeys";
 import { TicketEdit, TicketShow } from "./pages/tickets";
+import {
+  TicketValidationList,
+  TicketValidationShow,
+} from "./pages/ticket-validations";
 import { Dashboard } from "./pages/dashboard";
 import {
   DiscountPackageCreate,
@@ -146,6 +151,17 @@ function App() {
                         icon: <ContactsOutlined />,
                         parent: "Ticket Management",
                         canDelete: true,
+                      },
+                    },
+                    {
+                      name: "ticket-validation",
+                      list: "/ticket-validations",
+                      show: "/ticket-validations/show/:id",
+                      meta: {
+                        label: "Ticket Validations",
+                        icon: <CheckOutlined />,
+                        parent: "Ticket Management",
+                        canDelete: false,
                       },
                     },
                     {
@@ -299,6 +315,15 @@ function App() {
                         <Route path="create" element={<TicketCreate />} />
                         <Route path="edit/:id" element={<TicketEdit />} />
                         <Route path="show/:id" element={<TicketShow />} />
+                      </Route>
+
+                      {/* Ticket Validation Routes */}
+                      <Route path="/ticket-validations">
+                        <Route index element={<TicketValidationList />} />
+                        <Route
+                          path="show/:id"
+                          element={<TicketValidationShow />}
+                        />
                       </Route>
 
                       {/* Voucher Routes */}
