@@ -89,6 +89,14 @@ export class AccountService extends BaseService {
     }
   }
 
+  async activateAccount(id: string): Promise<void> {
+    try {
+      await this.put<void>(`${this.endpoint}/${id}/activate`);
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
   // Dashboard and Analytics
   async getAccountSummary(): Promise<AccountSummary> {
     try {

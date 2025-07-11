@@ -6,9 +6,11 @@ import {
   NodeIndexOutlined,
   EditOutlined,
   EyeOutlined,
+  EnvironmentOutlined,
 } from "@ant-design/icons";
 import { LineStatus } from "../../data/interfaces";
 import { useMetroLine } from "../../hooks";
+import { MetroLineMap } from "../../components/map";
 
 export const MetroLineShow: React.FC = () => {
   const navigate = useNavigate();
@@ -112,15 +114,50 @@ export const MetroLineShow: React.FC = () => {
             </Descriptions>
           </Card>
 
-          <div className="text-center py-12">
-            <NodeIndexOutlined className="text-6xl text-gray-300 mb-4" />
-            <h3 className="text-xl font-semibold text-gray-600 mb-2">
-              Metro Line Details
-            </h3>
-            <p className="text-gray-500">
-              Detailed metro line view will be implemented here.
-            </p>
-          </div>
+          {/* Metro Line Map */}
+          <Card
+            title={
+              <div className="flex items-center gap-2">
+                <EnvironmentOutlined className="text-green-600" />
+                <span className="text-lg font-semibold">Metro Line Map</span>
+              </div>
+            }
+            size="small"
+          >
+            <MetroLineMap metroLine={metroLine} className="rounded-lg" />
+          </Card>
+
+          {/* Segments Information */}
+          <Card title="Segments" size="small">
+            <div className="space-y-3">
+              {metroLine.segments
+                .sort((a, b) => a.sequence - b.sequence)
+                .map((segment) => (
+                  <div
+                    key={segment.sequence}
+                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-medium">
+                          Segment {segment.sequence}
+                        </span>
+                      </div>
+                      <p className="text-gray-700">{segment.description}</p>
+                      <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
+                        <span>
+                          📏 Distance: <strong>{segment.distance} km</strong>
+                        </span>
+                        <span>
+                          ⏱️ Travel Time:{" "}
+                          <strong>{segment.travelTime} min</strong>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </Card>
         </div>
       </Card>
     </div>

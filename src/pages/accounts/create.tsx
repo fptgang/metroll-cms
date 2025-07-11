@@ -71,23 +71,6 @@ export const AccountCreate: React.FC = () => {
           </Form.Item>
 
           <Form.Item
-            label="Password"
-            name="password"
-            rules={[
-              {
-                required: true,
-                message: "Please enter the password",
-              },
-              {
-                min: 6,
-                message: "Password must be at least 6 characters",
-              },
-            ]}
-          >
-            <Input.Password placeholder="Enter password" />
-          </Form.Item>
-
-          <Form.Item
             label="Role"
             name="role"
             rules={[

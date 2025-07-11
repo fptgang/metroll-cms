@@ -62,7 +62,11 @@ export const AccountEdit: React.FC = () => {
       }}
     >
       <Form form={form} onFinish={onFinish} layout="vertical">
-        <Card title="Account Information">
+        <Card
+          title={
+            "Account Information - " + (account ? account.email : "Loading...")
+          }
+        >
           <Form.Item
             label="Full Name"
             name="fullName"
@@ -74,23 +78,6 @@ export const AccountEdit: React.FC = () => {
             ]}
           >
             <Input placeholder="Enter full name" />
-          </Form.Item>
-
-          <Form.Item
-            label="Email"
-            name="email"
-            rules={[
-              {
-                required: true,
-                message: "Please enter the email",
-              },
-              {
-                type: "email",
-                message: "Please enter a valid email",
-              },
-            ]}
-          >
-            <Input placeholder="Enter email address" />
           </Form.Item>
 
           <Form.Item
@@ -123,10 +110,6 @@ export const AccountEdit: React.FC = () => {
                 Customer
               </Select.Option>
             </Select>
-          </Form.Item>
-
-          <Form.Item label="Active" name="active" valuePropName="checked">
-            <Switch />
           </Form.Item>
         </Card>
 

@@ -91,6 +91,21 @@ export const useDeleteAccount = () => {
   });
 };
 
+export const useActivateAccount = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => accountService.activateAccount(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.accounts });
+      message.success("Account activated successfully!");
+    },
+    onError: (error: any) => {
+      message.error(error?.error || "Failed to activate account");
+    },
+  });
+};
+
 // Search accounts
 export const useSearchAccounts = (
   query: string,

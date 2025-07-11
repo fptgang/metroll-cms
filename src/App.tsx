@@ -31,6 +31,9 @@ import routerBindings, {
 } from "@refinedev/react-router";
 import { BrowserRouter, Route, Routes, Outlet } from "react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "./utils/firebase";
 
 import { authProvider } from "./providers/authProvider";
 
@@ -100,6 +103,35 @@ import {
 } from "./pages/account-discount-packages";
 
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      console.log("Firebase auth state changed:", user?.email || "no user");
+      setIsAuthenticated(!!user);
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Show loading spinner while checking auth
+  if (isLoading) {
+    return (
+      <div
+        style={{
+          height: "100vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        Loading...
+      </div>
+    );
+  }
+
   return (
     <BrowserRouter>
       <GitHubBanner />
@@ -286,156 +318,157 @@ function App() {
                   }}
                 >
                   <Routes>
-                    <Route
-                      element={
-                        <ThemedLayoutV2
-                          Sider={(props) => <ThemedSiderV2 {...props} fixed />}
-                        >
-                          <Outlet />
-                        </ThemedLayoutV2>
-                      }
-                    >
-                      {/* <Route
-                        index
-                        element={<NavigateToResource resource="dashboard" />}
-                      /> */}
-                      <Route index element={<Dashboard />} />
+                    {/* Show login page if not authenticated */}
+                    {!isAuthenticated ? (
+                      <Route path="*" element={<FirebaseLoginPage />} />
+                    ) : (
+                      /* Show main app if authenticated */
+                      <Route
+                        element={
+                          <ThemedLayoutV2
+                            Sider={(props) => (
+                              <ThemedSiderV2 {...props} fixed />
+                            )}
+                          >
+                            <Outlet />
+                          </ThemedLayoutV2>
+                        }
+                      >
+                        <Route index element={<Dashboard />} />
 
-                      {/* Account Routes */}
-                      <Route path="/accounts">
-                        <Route index element={<AccountList />} />
-                        <Route path="create" element={<AccountCreate />} />
-                        <Route path="edit/:id" element={<AccountEdit />} />
-                        <Route path="show/:id" element={<AccountShow />} />
+                        {/* Account Routes */}
+                        <Route path="/accounts">
+                          <Route index element={<AccountList />} />
+                          <Route path="create" element={<AccountCreate />} />
+                          <Route path="edit/:id" element={<AccountEdit />} />
+                          <Route path="show/:id" element={<AccountShow />} />
+                        </Route>
+
+                        {/* Ticket Routes */}
+                        <Route path="/tickets">
+                          <Route index element={<TicketList />} />
+                          <Route path="create" element={<TicketCreate />} />
+                          <Route path="edit/:id" element={<TicketEdit />} />
+                          <Route path="show/:id" element={<TicketShow />} />
+                        </Route>
+
+                        {/* Ticket Validation Routes */}
+                        <Route path="/ticket-validations">
+                          <Route index element={<TicketValidationList />} />
+                          <Route
+                            path="show/:id"
+                            element={<TicketValidationShow />}
+                          />
+                        </Route>
+
+                        {/* Voucher Routes */}
+                        <Route path="/vouchers">
+                          <Route index element={<VoucherList />} />
+                          <Route path="create" element={<VoucherCreate />} />
+                          <Route path="edit/:id" element={<VoucherEdit />} />
+                          <Route path="show/:id" element={<VoucherShow />} />
+                        </Route>
+
+                        {/* Staff Routes */}
+                        <Route path="/staff">
+                          <Route index element={<StaffList />} />
+                        </Route>
+
+                        {/* Discount Package Routes */}
+                        <Route path="/discount-packages">
+                          <Route index element={<DiscountPackageList />} />
+                          <Route
+                            path="create"
+                            element={<DiscountPackageCreate />}
+                          />
+                          <Route
+                            path="edit/:id"
+                            element={<DiscountPackageEdit />}
+                          />
+                          <Route
+                            path="show/:id"
+                            element={<DiscountPackageShow />}
+                          />
+                        </Route>
+
+                        {/* Account Discount Package Routes */}
+                        <Route path="/account-discount-packages">
+                          <Route
+                            index
+                            element={<AccountDiscountPackageList />}
+                          />
+                          <Route
+                            path="assign"
+                            element={<AccountDiscountPackageAssign />}
+                          />
+                          <Route
+                            path="edit/:id"
+                            element={<AccountDiscountPackageEdit />}
+                          />
+                          <Route
+                            path="show/:id"
+                            element={<AccountDiscountPackageShow />}
+                          />
+                        </Route>
+
+                        {/* P2P Journey Routes */}
+                        <Route path="/p2p-journeys">
+                          <Route index element={<P2PJourneyList />} />
+                          <Route path="create" element={<P2PJourneyCreate />} />
+                          <Route path="edit/:id" element={<P2PJourneyEdit />} />
+                          <Route path="show/:id" element={<P2PJourneyShow />} />
+                        </Route>
+
+                        {/* Timed Ticket Plan Routes */}
+                        <Route path="/timed-ticket-plans">
+                          <Route index element={<TimedTicketPlanList />} />
+                          <Route
+                            path="create"
+                            element={<TimedTicketPlanCreate />}
+                          />
+                          <Route
+                            path="edit/:id"
+                            element={<TimedTicketPlanEdit />}
+                          />
+                          <Route
+                            path="show/:id"
+                            element={<TimedTicketPlanShow />}
+                          />
+                        </Route>
+
+                        {/* Station Routes */}
+                        <Route path="/stations">
+                          <Route index element={<StationList />} />
+                          <Route path="create" element={<StationCreate />} />
+                          <Route path="edit/:id" element={<StationEdit />} />
+                          <Route path="show/:id" element={<StationShow />} />
+                        </Route>
+
+                        {/* Metro Line Routes */}
+                        <Route path="/metro-lines">
+                          <Route index element={<MetroLineList />} />
+                          <Route path="create" element={<MetroLineCreate />} />
+                          <Route path="edit/:id" element={<MetroLineEdit />} />
+                          <Route path="show/:id" element={<MetroLineShow />} />
+                        </Route>
+
+                        {/* Order Routes */}
+                        <Route path="/orders">
+                          <Route index element={<OrderList />} />
+                          <Route path="create" element={<OrderCreate />} />
+                          <Route
+                            path="edit/:orderNumber"
+                            element={<OrderEdit />}
+                          />
+                          <Route
+                            path="show/:orderNumber"
+                            element={<OrderShow />}
+                          />
+                        </Route>
+
+                        <Route path="*" element={<ErrorComponent />} />
                       </Route>
-
-                      {/* Ticket Routes */}
-                      <Route path="/tickets">
-                        <Route index element={<TicketList />} />
-                        <Route path="create" element={<TicketCreate />} />
-                        <Route path="edit/:id" element={<TicketEdit />} />
-                        <Route path="show/:id" element={<TicketShow />} />
-                      </Route>
-
-                      {/* Ticket Validation Routes */}
-                      <Route path="/ticket-validations">
-                        <Route index element={<TicketValidationList />} />
-                        <Route
-                          path="show/:id"
-                          element={<TicketValidationShow />}
-                        />
-                      </Route>
-
-                      {/* Voucher Routes */}
-                      <Route path="/vouchers">
-                        <Route index element={<VoucherList />} />
-                        <Route path="create" element={<VoucherCreate />} />
-                        <Route path="edit/:id" element={<VoucherEdit />} />
-                        <Route path="show/:id" element={<VoucherShow />} />
-                      </Route>
-
-                      {/* Staff Routes */}
-                      <Route path="/staff">
-                        <Route index element={<StaffList />} />
-                      </Route>
-
-                      {/* Discount Package Routes */}
-                      <Route path="/discount-packages">
-                        <Route index element={<DiscountPackageList />} />
-                        <Route
-                          path="create"
-                          element={<DiscountPackageCreate />}
-                        />
-                        <Route
-                          path="edit/:id"
-                          element={<DiscountPackageEdit />}
-                        />
-                        <Route
-                          path="show/:id"
-                          element={<DiscountPackageShow />}
-                        />
-                      </Route>
-
-                      {/* Account Discount Package Routes */}
-                      <Route path="/account-discount-packages">
-                        <Route index element={<AccountDiscountPackageList />} />
-                        <Route
-                          path="assign"
-                          element={<AccountDiscountPackageAssign />}
-                        />
-                        <Route
-                          path="edit/:id"
-                          element={<AccountDiscountPackageEdit />}
-                        />
-                        <Route
-                          path="show/:id"
-                          element={<AccountDiscountPackageShow />}
-                        />
-                      </Route>
-
-                      {/* P2P Journey Routes */}
-                      <Route path="/p2p-journeys">
-                        <Route index element={<P2PJourneyList />} />
-                        <Route path="create" element={<P2PJourneyCreate />} />
-                        <Route path="edit/:id" element={<P2PJourneyEdit />} />
-                        <Route path="show/:id" element={<P2PJourneyShow />} />
-                      </Route>
-
-                      {/* Timed Ticket Plan Routes */}
-                      <Route path="/timed-ticket-plans">
-                        <Route index element={<TimedTicketPlanList />} />
-                        <Route
-                          path="create"
-                          element={<TimedTicketPlanCreate />}
-                        />
-                        <Route
-                          path="edit/:id"
-                          element={<TimedTicketPlanEdit />}
-                        />
-                        <Route
-                          path="show/:id"
-                          element={<TimedTicketPlanShow />}
-                        />
-                      </Route>
-
-                      {/* Station Routes */}
-                      <Route path="/stations">
-                        <Route index element={<StationList />} />
-                        <Route path="create" element={<StationCreate />} />
-                        <Route path="edit/:id" element={<StationEdit />} />
-                        <Route path="show/:id" element={<StationShow />} />
-                      </Route>
-
-                      {/* Metro Line Routes */}
-                      <Route path="/metro-lines">
-                        <Route index element={<MetroLineList />} />
-                        <Route path="create" element={<MetroLineCreate />} />
-                        <Route path="edit/:id" element={<MetroLineEdit />} />
-                        <Route path="show/:id" element={<MetroLineShow />} />
-                      </Route>
-
-                      {/* Order Routes */}
-                      <Route path="/orders">
-                        <Route index element={<OrderList />} />
-                        <Route path="create" element={<OrderCreate />} />
-                        <Route
-                          path="edit/:orderNumber"
-                          element={<OrderEdit />}
-                        />
-                        <Route
-                          path="show/:orderNumber"
-                          element={<OrderShow />}
-                        />
-                      </Route>
-
-                      <Route path="*" element={<ErrorComponent />} />
-                    </Route>
-
-                    <Route element={<FirebaseLoginPage />} path="/login" />
-                    <Route
-                      element={<CatchAllNavigate to="/dashboard" />}
-                      path="*"
-                    />
+                    )}
                   </Routes>
                   <RefineKbar />
                   <UnsavedChangesNotifier />

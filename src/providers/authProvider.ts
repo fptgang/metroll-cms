@@ -50,6 +50,7 @@ export const authProvider: AuthProvider = {
       );
 
       localStorage.setItem("user", JSON.stringify(response.data));
+      localStorage.setItem("auth_token", idToken);
 
       return {
         success: true,
@@ -88,14 +89,24 @@ export const authProvider: AuthProvider = {
 
   check: async () => {
     return new Promise((resolve) => {
+      // Set a timeout to prevent infinite waiting
+      const timeout = setTimeout(() => {
+        console.log("Auth check timeout - assuming not authenticated");
+        resolve({ authenticated: false, redirectTo: "/login" });
+      }, 3000);
+
       const unsubscribe = onAuthStateChanged(
         auth,
         (user: FirebaseUser | null) => {
-          const token = localStorage.getItem("auth_token");
+          clearTimeout(timeout);
 
-          if (user && token) {
+          console.log("Auth check - Firebase user:", user?.email || "none");
+
+          if (user) {
+            console.log("Auth check - User is authenticated");
             resolve({ authenticated: true });
           } else {
+            console.log("Auth check - User is NOT authenticated");
             resolve({ authenticated: false, redirectTo: "/login" });
           }
 

@@ -16,10 +16,17 @@ import {
   Pagination,
   Tooltip,
 } from "antd";
-import { UserOutlined, SearchOutlined, GiftOutlined } from "@ant-design/icons";
+import {
+  UserOutlined,
+  SearchOutlined,
+  GiftOutlined,
+  DeleteOutlined,
+  CheckCircleOutlined,
+} from "@ant-design/icons";
 import { AccountDto, AccountRole } from "../../data";
 import {
   useAccounts,
+  useActivateAccount,
   useDeleteAccount,
   // useAccountDiscountPackageByAccountId,
 } from "../../hooks";
@@ -32,9 +39,14 @@ export const AccountList: React.FC = () => {
 
   const { data, isLoading, error } = useAccounts(page, size);
   const deleteMutation = useDeleteAccount();
+  const activateMutation = useActivateAccount();
 
   const handleDelete = (id: string) => {
     deleteMutation.mutate(id);
+  };
+
+  const handleActivate = (id: string) => {
+    activateMutation.mutate(id);
   };
 
   const accounts = data?.content || [];
@@ -128,11 +140,14 @@ export const AccountList: React.FC = () => {
               <Space>
                 <ShowButton hideText size="small" recordItemId={record.id} />
                 <EditButton hideText size="small" recordItemId={record.id} />
-                <DeleteButton
-                  hideText
+                <Button
                   size="small"
-                  recordItemId={record.id}
-                  onSuccess={() => handleDelete(record.id)}
+                  icon={
+                    record.active ? <CheckCircleOutlined /> : <DeleteOutlined />
+                  }
+                  danger={!record.active}
+                  type="primary"
+                  onClick={() => handleDelete(record.id)}
                 />
               </Space>
             )}
