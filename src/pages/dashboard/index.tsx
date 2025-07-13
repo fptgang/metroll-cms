@@ -94,7 +94,7 @@ export const Dashboard: React.FC = () => {
     <div className="p-6 bg-gray-50 min-h-screen">
       <div className="mb-6">
         <Title level={2} className="text-gray-800">
-          MetRoll CMS Dashboard
+          Metroll CMS Dashboard
         </Title>
         <Text type="secondary">
           Real-time overview of your metro system operations
