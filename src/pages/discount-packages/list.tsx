@@ -20,6 +20,7 @@ import { SearchOutlined, GiftOutlined } from "@ant-design/icons";
 import { DiscountPackageDto } from "../../data/interfaces";
 import { useDiscountPackages, useTerminateDiscountPackage } from "../../hooks";
 import { formatDate } from "../../utils/formatDate";
+import {usePermissions} from "@refinedev/core";
 
 const { Option } = Select;
 
@@ -30,6 +31,7 @@ export const DiscountPackageList: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<
     "ACTIVE" | "TERMINATED" | ""
   >("");
+  const perm = usePermissions();
 
   const filters = {
     search: searchQuery || undefined,
@@ -121,19 +123,21 @@ export const DiscountPackageList: React.FC = () => {
             render={(_, record: DiscountPackageDto) => (
               <Space>
                 <ShowButton hideText size="small" recordItemId={record.id} />
-                <EditButton hideText size="small" recordItemId={record.id} />
-                {record.status === "ACTIVE" && (
-                  <Tooltip title="Terminate Package">
-                    <Button
-                      type="text"
-                      size="small"
-                      danger
-                      onClick={() => handleTerminate(record.id)}
-                      loading={terminateMutation.isPending}
-                    >
-                      <DeleteButton hideText size="small" />
-                    </Button>
-                  </Tooltip>
+                {(perm.data === 'ADMIN' && record.status === "ACTIVE") && (
+                    <>
+                      <EditButton hideText size="small" recordItemId={record.id} />
+                      <Tooltip title="Terminate Package">
+                        <Button
+                            type="text"
+                            size="small"
+                            danger
+                            onClick={() => handleTerminate(record.id)}
+                            loading={terminateMutation.isPending}
+                        >
+                          <DeleteButton hideText size="small" />
+                        </Button>
+                      </Tooltip>
+                    </>
                 )}
               </Space>
             )}
