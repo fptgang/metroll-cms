@@ -1,0 +1,86 @@
+---
+alwaysApply: true
+---
+
+# Metroll CMS Project Structure Guide
+
+This is a React + TypeScript CMS for a metro/subway ticketing system built with Refine framework.
+
+## Technology Stack
+
+- **Frontend**: React 18 + TypeScript + Vite
+- **UI Library**: Ant Design + Tailwind CSS
+- **State Management**: React Query (@tanstack/react-query)
+- **Framework**: Refine for admin interfaces
+- **Authentication**: Firebase Auth + Custom Backend JWT
+- **Backend**: Custom REST API with Firebase Functions
+- **Maps**: Leaflet + React Leaflet
+
+## Key Directories & Files
+
+### Core Application
+
+- [src/App.tsx](mdc:src/App.tsx) - Main app with Refine setup, routing, and resource definitions
+- [src/index.tsx](mdc:src/index.tsx) - Application entry point
+- [package.json](mdc:package.json) - Dependencies and scripts
+
+### Data Layer
+
+- [src/data/services/](mdc:src/data/services/) - API service classes inheriting from BaseService
+- [src/data/interfaces/](mdc:src/data/interfaces/) - TypeScript interfaces mirroring backend DTOs
+- [src/data/types/enums.ts](mdc:src/data/types/enums.ts) - Application enums (AccountRole, TicketStatus, etc.)
+- [src/hooks/](mdc:src/hooks/) - Custom React Query hooks for data fetching (useAccounts, useTickets, etc.)
+
+### UI Components & Pages
+
+- [src/components/](mdc:src/components/) - Reusable UI components (layout, map, menu, breadcrumb)
+- [src/pages/](mdc:src/pages/) - Feature-based pages with CRUD operations for each entity
+- [src/providers/authProvider.ts](mdc:src/providers/authProvider.ts) - Refine auth provider with Firebase integration
+
+### Configuration & Utils
+
+- [src/utils/](mdc:src/utils/) - Utility functions (formatCurrency, formatDate, Firebase config)
+- [vite.config.ts](mdc:vite.config.ts) - Vite build configuration
+- [tailwind.config.js](mdc:tailwind.config.js) - Tailwind CSS configuration
+- [firebase.json](mdc:firebase.json) - Firebase configuration
+
+## Entity Management Pattern
+
+Each entity follows a consistent pattern:
+
+```
+src/pages/{entity}/
+  ├── index.ts - Export all components
+  ├── list.tsx - List/table view with search, filtering, pagination
+  ├── create.tsx - Create form
+  ├── edit.tsx - Edit form
+  └── show.tsx - Detail view
+```
+
+## Managed Entities
+
+- **accounts** - User management (Admin, Staff, Customer roles)
+- **tickets** - P2P and Timed tickets
+- **stations** - Metro stations with coordinates
+- **metro-lines** - Metro line definitions
+- **vouchers** - Discount vouchers
+- **orders** - Purchase orders
+- **p2p-journeys** - Point-to-point journey definitions
+- **timed-ticket-plans** - Time-based ticket plans
+- **discount-packages** - Account discount assignments
+
+## Authentication Flow
+
+1. Firebase Auth for user authentication
+2. Firebase ID token sent to backend for verification
+3. Backend returns custom JWT for API access
+4. [src/providers/authProvider.ts](mdc:src/providers/authProvider.ts) handles the integration
+
+## API Integration Pattern
+
+All API calls go through service classes in [src/data/services/](mdc:src/data/services/) that extend [BaseService](mdc:src/data/services/base.service.ts) with automatic token management and error handling.
+description:
+globs:
+alwaysApply: false
+
+---

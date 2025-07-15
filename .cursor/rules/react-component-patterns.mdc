@@ -1,0 +1,157 @@
+---
+globs: "*.tsx"
+---
+
+# React Component Patterns for Metroll CMS
+
+## Component Structure Standards
+
+### Page Components (CRUD Pattern)
+
+Follow the established pattern in [src/pages/](mdc:src/pages/) directories:
+
+```typescript
+// List Component Pattern
+export const EntityList: React.FC = () => {
+  const [page, setPage] = useState(0);
+  const [size, setSize] = useState(10);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const { data, isLoading } = useEntities(page, size, { search: searchQuery });
+
+  return (
+    <Card title="Entities" extra={<CreateButton />}>
+      <Input.Search onSearch={setSearchQuery} />
+      <Table dataSource={data?.content} />
+      <Pagination
+        current={page + 1}
+        total={data?.totalElements}
+        onChange={(p) => setPage(p - 1)}
+      />
+    </Card>
+  );
+};
+```
+
+### Form Components
+
+Use Refine's form patterns with Ant Design:
+
+```typescript
+// Create/Edit Pattern
+export const EntityForm: React.FC = () => {
+  const { form, formProps, saveButtonProps } = useForm<EntityDto>();
+
+  return (
+    <Form {...formProps} layout="vertical">
+      <Form.Item label="Name" name="name" rules={[{ required: true }]}>
+        <Input />
+      </Form.Item>
+      <SaveButton {...saveButtonProps} />
+    </Form>
+  );
+};
+```
+
+### Show Components
+
+Display entity details with consistent layout:
+
+```typescript
+// Show Pattern
+export const EntityShow: React.FC = () => {
+  const {
+    query: { data, isLoading },
+  } = useShow<EntityDto>();
+
+  return (
+    <Show isLoading={isLoading}>
+      <Title level={5}>Entity Details</Title>
+      {/* Display fields */}
+    </Show>
+  );
+};
+```
+
+## State Management
+
+- Use React Query hooks from [src/hooks/](mdc:src/hooks/) for server state
+- Use React useState for local component state
+- Avoid global state - prefer prop drilling or React Query cache
+
+## Component Export Patterns
+
+Each page directory should have an [index.ts](mdc:src/pages/accounts/index.ts) file that exports all components:
+
+```typescript
+export { EntityList } from "./list";
+export { EntityCreate } from "./create";
+export { EntityEdit } from "./edit";
+export { EntityShow } from "./show";
+```
+
+## Error Handling in Components
+
+```typescript
+const { data, isLoading, error } = useEntities(page, size);
+
+if (error) {
+  return <Alert message="Failed to load data" type="error" />;
+}
+```
+
+## Loading States
+
+Always handle loading states with Ant Design's loading prop:
+
+```typescript
+<Table
+  dataSource={data?.content || []}
+  loading={isLoading}
+  // ... other props
+/>
+```
+
+## Icon Usage
+
+Use Ant Design icons consistently:
+
+- `<UserOutlined />` for accounts/users
+- `<ContactsOutlined />` for tickets
+- `<EnvironmentOutlined />` for stations
+- `<TagOutlined />` for vouchers/packages
+- Import from `@ant-design/icons`
+
+## Action Buttons
+
+Use Refine's action button components:
+
+- `<CreateButton />` for create actions
+- `<EditButton recordItemId={id} />` for edit
+- `<ShowButton recordItemId={id} />` for show
+- `<DeleteButton recordItemId={id} />` for delete
+
+## Table Patterns
+
+```typescript
+<Table.Column
+  dataIndex="status"
+  title="Status"
+  render={(value: EntityStatus) => (
+    <Tag color={getStatusColor(value)}>{value}</Tag>
+  )}
+/>
+```
+
+## Search and Filtering
+
+Implement search with debounced input and clear functionality:
+
+```typescript
+<Input.Search
+  placeholder="Search entities..."
+  allowClear
+  onSearch={setSearchQuery}
+  enterButton={<SearchOutlined />}
+/>
+```

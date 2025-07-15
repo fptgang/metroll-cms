@@ -1,0 +1,199 @@
+---
+globs: "src/data/**/*,src/hooks/**/*"
+---
+
+# Data Layer Patterns for Metroll CMS
+
+## Service Layer Architecture
+
+### Base Service Pattern
+
+All services extend [BaseService](mdc:src/data/services/base.service.ts) which provides:
+
+- Automatic Firebase token injection
+- Generic HTTP methods (get, post, put, delete)
+- Paginated queries with `getPage<T>()`
+- Error handling and auth interceptors
+
+```typescript
+export class EntityService extends BaseService {
+  private readonly endpoint = "/entities";
+
+  async getEntities(
+    pageable?: PageableDto,
+    filters?: EntityFilter
+  ): Promise<PageDto<EntityDto>> {
+    return this.getPage<EntityDto>(this.endpoint, pageable, filters);
+  }
+
+  async getEntityById(id: string): Promise<EntityDto> {
+    return this.get<EntityDto>(`${this.endpoint}/${id}`);
+  }
+
+  async createEntity(data: EntityCreateRequest): Promise<EntityDto> {
+    return this.post<EntityDto>(this.endpoint, data);
+  }
+
+  async updateEntity(
+    id: string,
+    data: EntityUpdateRequest
+  ): Promise<EntityDto> {
+    return this.put<EntityDto>(`${this.endpoint}/${id}`, data);
+  }
+
+  async deleteEntity(id: string): Promise<void> {
+    return this.delete<void>(`${this.endpoint}/${id}`);
+  }
+}
+```
+
+### Service Registration
+
+Register services in [src/data/services/index.ts](mdc:src/data/services/index.ts):
+
+```typescript
+export const entityService = new EntityService();
+```
+
+## Custom Hooks Pattern
+
+### Hook Structure
+
+Follow the pattern established in [src/hooks/useAccounts.ts](mdc:src/hooks/useAccounts.ts):
+
+```typescript
+// Query Keys - Consistent naming
+const QUERY_KEYS = {
+  entities: ["entities"] as const,
+  entity: (id: string) => ["entities", id] as const,
+  entitiesPage: (page: number, size: number, filters?: EntityFilter) =>
+    ["entities", "page", page, size, filters] as const,
+};
+
+// Read Operations
+export const useEntities = (
+  page: number = 0,
+  size: number = 10,
+  filters?: EntityFilter
+) => {
+  return useQuery({
+    queryKey: QUERY_KEYS.entitiesPage(page, size, filters),
+    queryFn: () => entityService.getEntities({ page, size }, filters),
+  });
+};
+
+export const useEntity = (id: string) => {
+  return useQuery({
+    queryKey: QUERY_KEYS.entity(id),
+    queryFn: () => entityService.getEntityById(id),
+    enabled: !!id,
+  });
+};
+
+// Write Operations with Optimistic Updates
+export const useCreateEntity = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: EntityCreateRequest) => entityService.createEntity(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.entities });
+      message.success("Entity created successfully!");
+    },
+    onError: (error: any) => {
+      message.error(error?.error || "Failed to create entity");
+    },
+  });
+};
+```
+
+### Hook Registration
+
+Export hooks from [src/hooks/index.ts](mdc:src/hooks/index.ts) for easy importing.
+
+## Interface Definitions
+
+### Entity DTOs
+
+Mirror backend Java DTOs exactly in [src/data/interfaces/](mdc:src/data/interfaces/):
+
+```typescript
+export interface EntityDto extends BaseEntity {
+  name: string;
+  description: string;
+  status: EntityStatus;
+  // Always match backend field names and types
+}
+```
+
+### Request/Response Types
+
+```typescript
+export interface EntityCreateRequest {
+  // Required fields only
+  name: string;
+  description: string;
+}
+
+export interface EntityUpdateRequest {
+  // All fields optional for partial updates
+  name?: string;
+  description?: string;
+  status?: EntityStatus;
+}
+
+export interface EntityFilter {
+  search?: string;
+  status?: EntityStatus;
+  createdAfter?: string;
+  createdBefore?: string;
+}
+```
+
+## Error Handling Standards
+
+### Service Level
+
+Services automatically handle HTTP errors via [BaseService](mdc:src/data/services/base.service.ts) interceptors:
+
+- 401 errors trigger automatic logout
+- All errors return consistent [ErrorResponse](mdc:src/data/interfaces/common.ts) format
+
+### Hook Level
+
+Hooks handle errors with Ant Design messages:
+
+```typescript
+onError: (error: any) => {
+  message.error(error?.error || "Operation failed");
+};
+```
+
+## Pagination Standards
+
+Use consistent pagination with zero-based indexing:
+
+```typescript
+// PageableDto format
+{
+  page: 0,        // Zero-based page number
+  size: 10,       // Items per page
+  sort: {         // Optional sorting
+    field: "DESC"
+  }
+}
+```
+
+## Cache Management
+
+- Use React Query's `invalidateQueries` for cache updates
+- Implement optimistic updates where appropriate
+- Use consistent query keys for proper cache invalidation
+
+## Import Conventions
+
+Import data layer modules in this order:
+
+1. Interfaces from `../data/interfaces`
+2. Services from `../data/services`
+3. Hooks from `../hooks`
