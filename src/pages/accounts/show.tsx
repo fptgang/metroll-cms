@@ -17,6 +17,7 @@ import { useAccount, useAccountDiscountPackageByAccountId } from "../../hooks";
 import { useParams, useNavigate } from "react-router";
 import { AccountRole } from "../../data";
 import { formatDate } from "../../utils/formatDate";
+import {usePermissions} from "@refinedev/core";
 
 const { Title, Text } = Typography;
 
@@ -26,6 +27,7 @@ export const AccountShow: React.FC = () => {
   const { data: account, isLoading } = useAccount(id!);
   const { data: discountPackage, isLoading: loadingDiscount } =
     useAccountDiscountPackageByAccountId(id!);
+  const perm = usePermissions();
 
   if (isLoading) {
     return (
@@ -38,7 +40,7 @@ export const AccountShow: React.FC = () => {
   }
 
   return (
-    <Show>
+    <Show canDelete={perm.data === "ADMIN"}>
       <Card>
         <Row gutter={[16, 16]}>
           <Col span={24} style={{ textAlign: "center", marginBottom: 16 }}>
@@ -96,13 +98,13 @@ export const AccountShow: React.FC = () => {
         <Row gutter={[16, 16]}>
           <Col span={12}>
             <Title level={5}>Created At</Title>
-            <Text>{new Date(account.createdAt).toLocaleDateString()}</Text>
+            <Text>{new Date(account.createdAt*1000).toLocaleDateString()}</Text>
           </Col>
           <Col span={12}>
             <Title level={5}>Updated At</Title>
             <Text>
               {account.updatedAt
-                ? new Date(account.updatedAt).toLocaleDateString()
+                ? new Date(account.updatedAt*1000).toLocaleDateString()
                 : "Not updated"}
             </Text>
           </Col>

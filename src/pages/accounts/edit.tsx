@@ -24,6 +24,7 @@ import {
 import { useParams, useNavigate } from "react-router";
 import { GiftOutlined } from "@ant-design/icons";
 import { formatDate } from "../../utils/formatDate";
+import {usePermissions} from "@refinedev/core";
 
 const { Title, Text } = Typography;
 
@@ -35,6 +36,7 @@ export const AccountEdit: React.FC = () => {
     useAccountDiscountPackageByAccountId(id!);
   const updateMutation = useUpdateAccount();
   const navigate = useNavigate();
+  const perm = usePermissions();
 
   useEffect(() => {
     if (account) {
@@ -60,6 +62,7 @@ export const AccountEdit: React.FC = () => {
         loading: updateMutation.isPending,
         onClick: () => form.submit(),
       }}
+      canDelete={perm.data === "ADMIN"}
     >
       <Form form={form} onFinish={onFinish} layout="vertical">
         <Card

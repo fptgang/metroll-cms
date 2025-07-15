@@ -31,11 +31,13 @@ import {
   // useAccountDiscountPackageByAccountId,
 } from "../../hooks";
 import { formatDate } from "../../utils/formatDate";
+import {usePermissions} from "@refinedev/core";
 
 export const AccountList: React.FC = () => {
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
   const [searchQuery, setSearchQuery] = useState("");
+  const perm = usePermissions();
 
   const { data, isLoading, error } = useAccounts(page, size);
   const deleteMutation = useDeleteAccount();
@@ -140,15 +142,18 @@ export const AccountList: React.FC = () => {
               <Space>
                 <ShowButton hideText size="small" recordItemId={record.id} />
                 <EditButton hideText size="small" recordItemId={record.id} />
-                <Button
-                  size="small"
-                  icon={
-                    record.active ? <CheckCircleOutlined /> : <DeleteOutlined />
-                  }
-                  danger={!record.active}
-                  type="primary"
-                  onClick={() => handleDelete(record.id)}
-                />
+                {
+                  perm.data === "ADMIN" &&
+                    <Button
+                        size="small"
+                        icon={
+                          record.active ? <CheckCircleOutlined /> : <DeleteOutlined />
+                        }
+                        danger={!record.active}
+                        type="primary"
+                        onClick={() => handleDelete(record.id)}
+                    />
+                }
               </Space>
             )}
           />
