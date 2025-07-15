@@ -88,7 +88,7 @@ export const AccountEdit: React.FC = () => {
             name="phoneNumber"
             rules={[
               {
-                required: true,
+                required: false,
                 message: "Please enter the phone number",
               },
             ]}
@@ -107,8 +107,12 @@ export const AccountEdit: React.FC = () => {
             ]}
           >
             <Select placeholder="Select role">
-              <Select.Option value={AccountRole.ADMIN}>Admin</Select.Option>
-              <Select.Option value={AccountRole.STAFF}>Staff</Select.Option>
+              {
+                perm.data === "ADMIN" && <>
+                    <Select.Option value={AccountRole.ADMIN}>Admin</Select.Option>
+                    <Select.Option value={AccountRole.STAFF}>Staff</Select.Option>
+                  </>
+              }
               <Select.Option value={AccountRole.CUSTOMER}>
                 Customer
               </Select.Option>
