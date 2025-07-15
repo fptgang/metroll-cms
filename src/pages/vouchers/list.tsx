@@ -1,28 +1,16 @@
-import React, { useState } from "react";
-import {
-  EditButton,
-  ShowButton,
-  DeleteButton,
-  CreateButton,
-} from "@refinedev/antd";
-import { Table, Space, Tag, Card, Input, Pagination, Button } from "antd";
-import {
-  SearchOutlined,
-  DollarOutlined,
-  DeleteOutlined,
-} from "@ant-design/icons";
-import { VoucherDto, VoucherStatus } from "../../data";
-import {
-  useVouchers,
-  useDeleteVoucher,
-  useUpdateVoucherStatus,
-} from "../../hooks";
-import { formatDate } from "../../utils/formatDate";
+import React, {useState} from "react";
+import {CreateButton, EditButton, ShowButton,} from "@refinedev/antd";
+import {Button, Card, Pagination, Space, Table, Tag} from "antd";
+import {DeleteOutlined, DollarOutlined,} from "@ant-design/icons";
+import {VoucherDto, VoucherStatus} from "../../data";
+import {useDeleteVoucher, useUpdateVoucherStatus, useVouchers,} from "../../hooks";
+import {formatDate} from "../../utils/formatDate";
+import {usePermissions} from "@refinedev/core";
 
 export const VoucherList: React.FC = () => {
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
-  const [searchQuery, setSearchQuery] = useState("");
+  const perm = usePermissions();
 
   const { data, isLoading } = useVouchers(page, size);
   const deleteMutation = useDeleteVoucher();
@@ -59,13 +47,6 @@ export const VoucherList: React.FC = () => {
   return (
     <Card title="Vouchers" extra={<CreateButton />} style={{ margin: "16px" }}>
       <Space direction="vertical" size="middle" style={{ width: "100%" }}>
-        <Input.Search
-          placeholder="Search vouchers..."
-          allowClear
-          onSearch={setSearchQuery}
-          style={{ width: 300 }}
-          enterButton={<SearchOutlined />}
-        />
 
         <Table
           dataSource={vouchers}
@@ -74,6 +55,10 @@ export const VoucherList: React.FC = () => {
           pagination={false}
         >
           <Table.Column
+              dataIndex="ownerId"
+              title="Owner ID"
+          />
+          {perm.data === 'ADMIN' && <Table.Column
             dataIndex="code"
             title="Voucher Code"
             render={(value) => (
@@ -81,7 +66,7 @@ export const VoucherList: React.FC = () => {
                 {value}
               </span>
             )}
-          />
+          />}
           <Table.Column
             dataIndex="discountAmount"
             title="Discount Amount"
@@ -128,36 +113,15 @@ export const VoucherList: React.FC = () => {
             render={(_: unknown, record: VoucherDto) => (
               <Space>
                 <ShowButton hideText size="small" recordItemId={record.id} />
-                <EditButton hideText size="small" recordItemId={record.id} />
-                {/* {record.status === VoucherStatus.VALID && (
+                {((perm.data === "ADMIN" || perm.data === "STAFF") && record.status == VoucherStatus.VALID) && <>
+                  <EditButton hideText size="small" recordItemId={record.id} />
                   <Button
-                    size="small"
-                    type="primary"
-                    danger
-                    onClick={() =>
-                      handleStatusChange(record.id, VoucherStatus.REVOKED)
-                    }
-                  >
-                    Revoke
-                  </Button>
-                )} */}
-                {record.status === VoucherStatus.REVOKED && (
-                  <Button
-                    size="small"
-                    type="primary"
-                    onClick={() =>
-                      handleStatusChange(record.id, VoucherStatus.VALID)
-                    }
-                  >
-                    Activate
-                  </Button>
-                )}
-                <Button
-                  danger
-                  icon={<DeleteOutlined />}
-                  size="small"
-                  onClick={() => handleDelete(record.id)}
-                />
+                      danger
+                      icon={<DeleteOutlined />}
+                      size="small"
+                      onClick={() => handleDelete(record.id)}
+                  />
+                </>}
               </Space>
             )}
           />
