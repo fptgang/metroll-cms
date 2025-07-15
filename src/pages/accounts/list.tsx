@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, {useEffect, useState} from "react";
 import {
   EditButton,
   ShowButton,
@@ -39,7 +39,9 @@ export const AccountList: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const perm = usePermissions();
 
-  const { data, isLoading, error } = useAccounts(page, size);
+  const { data, isLoading, error } = useAccounts(page, size, {
+    search: searchQuery
+  });
   const deleteMutation = useDeleteAccount();
   const activateMutation = useActivateAccount();
 
