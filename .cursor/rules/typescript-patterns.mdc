@@ -1,0 +1,113 @@
+---
+globs: "*.ts,*.tsx"
+---
+
+# TypeScript Patterns for Metroll CMS
+
+## Type Safety Requirements
+
+- Always use strict TypeScript with explicit return types for functions
+- Prefer interfaces over types for object shapes
+- Use enums from [src/data/types/enums.ts](mdc:src/data/types/enums.ts) for constants
+
+## Interface Conventions
+
+All interfaces should follow these patterns:
+
+### Entity DTOs
+
+```typescript
+// Mirror backend Java DTOs exactly
+export interface EntityDto extends BaseEntity {
+  // Properties mirror Java class fields
+}
+```
+
+### Request/Response Types
+
+```typescript
+export interface EntityCreateRequest {
+  // Required fields for creation
+}
+
+export interface EntityUpdateRequest {
+  // Optional fields for updates (use ?)
+}
+
+export interface EntityFilter {
+  // Optional filter parameters
+  search?: string;
+  // ... other filters
+}
+```
+
+### Base Patterns
+
+- Extend [BaseEntity](mdc:src/data/interfaces/common.ts) for all entity DTOs
+- Use [PageDto<T>](mdc:src/data/interfaces/common.ts) for paginated responses
+- Use [ErrorResponse](mdc:src/data/interfaces/common.ts) for error handling
+
+## Service Layer Types
+
+```typescript
+// Services extend BaseService
+export class EntityService extends BaseService {
+  async getEntities(
+    pageable?: PageableDto,
+    filters?: EntityFilter
+  ): Promise<PageDto<EntityDto>> {
+    return this.getPage<EntityDto>("/entities", pageable, filters);
+  }
+}
+```
+
+## Hook Return Types
+
+```typescript
+// React Query hooks should be strongly typed
+export const useEntities = (
+  page: number,
+  size: number,
+  filters?: EntityFilter
+) => {
+  return useQuery({
+    queryKey: ["entities", page, size, filters],
+    queryFn: () => entityService.getEntities({ page, size }, filters),
+  });
+};
+```
+
+## Component Props
+
+```typescript
+// Always define explicit prop interfaces
+interface EntityListProps {
+  searchQuery?: string;
+  onSelect?: (entity: EntityDto) => void;
+}
+
+export const EntityList: React.FC<EntityListProps> = ({
+  searchQuery,
+  onSelect,
+}) => {
+  // Component implementation
+};
+```
+
+## Import Organization
+
+1. React imports first
+2. Third-party libraries (antd, refine, etc.)
+3. Internal interfaces and types from [src/data/](mdc:src/data/)
+4. Internal hooks from [src/hooks/](mdc:src/hooks/)
+5. Internal utils from [src/utils/](mdc:src/utils/)
+6. Relative imports
+
+## Error Handling Types
+
+Always use the [ErrorResponse](mdc:src/data/interfaces/common.ts) interface for consistent error handling across the application.
+description:
+globs:
+alwaysApply: false
+
+---

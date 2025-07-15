@@ -1,0 +1,271 @@
+---
+globs: "*.tsx,*.css"
+---
+
+# Styling Patterns for Metroll CMS
+
+## UI Framework Stack
+
+- **Primary**: Ant Design (antd) for components
+- **Secondary**: Tailwind CSS for custom styling
+- **Icons**: Ant Design Icons (@ant-design/icons)
+
+## Ant Design Component Usage
+
+### Layout Components
+
+```typescript
+// Main layout with Refine's ThemedLayoutV2
+<ThemedLayoutV2
+  Sider={ThemedSiderV2}
+  // Sidebar configuration in App.tsx
+/>
+
+// Page containers
+<Card title="Page Title" extra={<CreateButton />}>
+  {/* Page content */}
+</Card>
+```
+
+### Data Display
+
+```typescript
+// Tables with consistent patterns
+<Table
+  dataSource={data?.content || []}
+  rowKey="id"
+  loading={isLoading}
+  pagination={false} // Use custom pagination
+>
+  <Table.Column dataIndex="name" title="Name" />
+  <Table.Column
+    dataIndex="status"
+    title="Status"
+    render={(value) => <Tag color={getStatusColor(value)}>{value}</Tag>}
+  />
+  <Table.Column
+    title="Actions"
+    render={(_, record) => (
+      <Space>
+        <EditButton recordItemId={record.id} />
+        <ShowButton recordItemId={record.id} />
+        <DeleteButton recordItemId={record.id} />
+      </Space>
+    )}
+  />
+</Table>
+```
+
+### Forms
+
+```typescript
+// Consistent form layout
+<Form layout="vertical" {...formProps}>
+  <Form.Item
+    label="Name"
+    name="name"
+    rules={[{ required: true, message: "Name is required" }]}
+  >
+    <Input placeholder="Enter name" />
+  </Form.Item>
+
+  <Form.Item label="Role" name="role">
+    <Select placeholder="Select role">
+      {Object.values(AccountRole).map((role) => (
+        <Select.Option key={role} value={role}>
+          {role}
+        </Select.Option>
+      ))}
+    </Select>
+  </Form.Item>
+</Form>
+```
+
+### Status Indicators
+
+```typescript
+// Status tags with color coding
+const getStatusColor = (status: TicketStatus) => {
+  switch (status) {
+    case TicketStatus.VALID:
+      return "green";
+    case TicketStatus.USED:
+      return "blue";
+    case TicketStatus.EXPIRED:
+      return "orange";
+    case TicketStatus.CANCELLED:
+      return "red";
+    default:
+      return "default";
+  }
+};
+
+<Tag color={getStatusColor(status)}>{status}</Tag>;
+```
+
+### Search and Filters
+
+```typescript
+// Search input pattern
+<Input.Search
+  placeholder="Search entities..."
+  allowClear
+  onSearch={setSearchQuery}
+  style={{ width: 300 }}
+  enterButton={<SearchOutlined />}
+/>
+```
+
+## Tailwind CSS Usage
+
+### Utility Classes
+
+Use Tailwind for spacing, sizing, and layout utilities:
+
+```typescript
+// Spacing and layout
+<div className="p-4 mb-6 flex items-center justify-between">
+  <h1 className="text-2xl font-bold">Title</h1>
+  <Button>Action</Button>
+</div>
+
+// Grid layouts
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  {/* Grid items */}
+</div>
+```
+
+### Responsive Design
+
+```typescript
+// Responsive breakpoints
+<div className="w-full sm:w-1/2 lg:w-1/3 xl:w-1/4">
+  {/* Responsive content */}
+</div>
+```
+
+## Color System
+
+### Ant Design Theme
+
+Configured in [App.tsx](mdc:src/App.tsx):
+
+```typescript
+<ConfigProvider
+  theme={{
+    token: {
+      colorPrimary: "#1890ff", // Primary blue
+    },
+  }}
+>
+```
+
+### Role-based Colors
+
+```typescript
+const getRoleColor = (role: AccountRole) => {
+  switch (role) {
+    case AccountRole.ADMIN:
+      return "red";
+    case AccountRole.STAFF:
+      return "blue";
+    case AccountRole.CUSTOMER:
+      return "green";
+    default:
+      return "default";
+  }
+};
+```
+
+## Icon Usage Standards
+
+### Consistent Icon Mapping
+
+```typescript
+// Entity icons
+{
+  name: "account",
+  meta: { icon: <UserOutlined /> }
+},
+{
+  name: "ticket",
+  meta: { icon: <ContactsOutlined /> }
+},
+{
+  name: "station",
+  meta: { icon: <EnvironmentOutlined /> }
+},
+{
+  name: "voucher",
+  meta: { icon: <TagOutlined /> }
+}
+```
+
+### Action Icons
+
+```typescript
+// Common action icons
+<SearchOutlined />        // Search functionality
+<EditOutlined />          // Edit actions
+<DeleteOutlined />        // Delete actions
+<PlusOutlined />          // Add/Create actions
+<EyeOutlined />           // View/Show actions
+<CheckCircleOutlined />   // Success states
+<ExclamationCircleOutlined /> // Warnings
+```
+
+## Spacing and Layout
+
+### Card Spacing
+
+```typescript
+<Card style={{ margin: "16px" }}>
+  <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+    {/* Card content with consistent spacing */}
+  </Space>
+</Card>
+```
+
+### Button Groups
+
+```typescript
+<Space>
+  <Button type="primary">Primary Action</Button>
+  <Button>Secondary Action</Button>
+  <Button danger>Danger Action</Button>
+</Space>
+```
+
+## Component Composition
+
+### Page Headers
+
+```typescript
+// Consistent page header pattern
+<div className="flex items-center justify-between mb-6">
+  <Title level={2}>Page Title</Title>
+  <Space>
+    <Button icon={<PlusOutlined />} type="primary">
+      Add New
+    </Button>
+  </Space>
+</div>
+```
+
+### Loading States
+
+```typescript
+// Skeleton loading for content
+{
+  isLoading ? <Skeleton active paragraph={{ rows: 8 }} /> : <ActualContent />;
+}
+```
+
+## Styling Best Practices
+
+- Prefer Ant Design components over custom CSS
+- Use Tailwind utilities for spacing and layout
+- Keep consistent spacing using Ant Design's `Space` component
+- Use semantic color meanings (green=success, red=danger, blue=info)
+- Implement responsive design with Tailwind breakpoints
+- Keep accessibility in mind with proper contrast and focus states

@@ -1,0 +1,201 @@
+---
+globs: "src/providers/**/*,src/utils/firebase*"
+---
+
+# Firebase Authentication Patterns for Metroll CMS
+
+## Authentication Flow
+
+The app uses a dual-token system:
+
+1. **Firebase Auth** for user authentication
+2. **Custom Backend JWT** for API authorization
+
+### Authentication Provider
+
+[src/providers/authProvider.ts](mdc:src/providers/authProvider.ts) implements Refine's AuthProvider interface:
+
+```typescript
+export const authProvider: AuthProvider = {
+  login: async ({ email, password }) => {
+    // 1. Authenticate with Firebase
+    const userCredential = await signInWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
+
+    // 2. Get Firebase ID token
+    const idToken = await userCredential.user.getIdToken();
+
+    // 3. Exchange for backend JWT
+    const response = await axios.post(
+      `${API_URL}/account/accounts/login/`,
+      {},
+      {
+        headers: { Authorization: `Bearer ${idToken}` },
+      }
+    );
+
+    // 4. Store user data
+    localStorage.setItem("user", JSON.stringify(response.data.account));
+    return { success: true };
+  },
+  // ... other auth methods
+};
+```
+
+## Firebase Configuration
+
+[src/utils/firebase.ts](mdc:src/utils/firebase.ts) contains Firebase setup:
+
+```typescript
+import { initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
+
+const firebaseConfig = {
+  // Configuration from environment variables
+};
+
+export const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
+```
+
+## Token Management in Services
+
+[BaseService](mdc:src/data/services/base.service.ts) automatically injects Firebase tokens:
+
+```typescript
+// Request interceptor adds Firebase token to all API calls
+this.client.interceptors.request.use(async (config) => {
+  const user = auth.currentUser;
+  if (user) {
+    const token = await user.getIdToken();
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// Response interceptor handles token expiration
+this.client.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      auth.signOut();
+      window.location.href = "/login";
+    }
+    return Promise.reject(error);
+  }
+);
+```
+
+## Authentication State Management
+
+Monitor authentication state in [App.tsx](mdc:src/App.tsx):
+
+```typescript
+function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setIsAuthenticated(!!user);
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Handle loading and authentication states
+}
+```
+
+## Login Component Pattern
+
+[src/pages/auth/login.tsx](mdc:src/pages/auth/login.tsx) implements Firebase authentication:
+
+```typescript
+export const FirebaseLoginPage: React.FC = () => {
+  const { mutate: login } = useLogin();
+
+  const handleSubmit = (values: LoginFormValues) => {
+    login(values);
+  };
+
+  // Form with email/password fields
+};
+```
+
+## Protected Routes
+
+Refine handles route protection automatically with the authProvider. For manual protection:
+
+```typescript
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const user = auth.currentUser;
+
+  if (!user) {
+    return <Navigate to="/login" />;
+  }
+
+  return <>{children}</>;
+};
+```
+
+## User Role Management
+
+Access user role from localStorage (set during login):
+
+```typescript
+const getUserRole = (): AccountRole | null => {
+  const userData = localStorage.getItem("user");
+  return userData ? JSON.parse(userData).role : null;
+};
+```
+
+## Google Authentication
+
+For Google Sign-In integration:
+
+```typescript
+const signInWithGoogle = async () => {
+  const provider = new GoogleAuthProvider();
+  const result = await signInWithPopup(auth, provider);
+  // Handle the result
+};
+```
+
+## Environment Variables
+
+Required Firebase environment variables:
+
+- `VITE_FIREBASE_API_KEY`
+- `VITE_FIREBASE_AUTH_DOMAIN`
+- `VITE_FIREBASE_PROJECT_ID`
+- `VITE_API_URL` for backend API
+
+## Error Handling
+
+Handle Firebase auth errors consistently:
+
+```typescript
+try {
+  await signInWithEmailAndPassword(auth, email, password);
+} catch (error: any) {
+  switch (error.code) {
+    case "auth/user-not-found":
+    case "auth/wrong-password":
+      return { success: false, error: "Invalid email or password" };
+    case "auth/too-many-requests":
+      return {
+        success: false,
+        error: "Too many failed attempts. Try again later.",
+      };
+    default:
+      return { success: false, error: "Authentication failed" };
+  }
+}
+```
