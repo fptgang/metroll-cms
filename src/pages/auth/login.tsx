@@ -22,16 +22,7 @@ export const FirebaseLoginPage: React.FC = () => {
   const onFinish = async (values: LoginFormValues) => {
     setLoading(true);
 
-    login(values, {
-      onSuccess: () => {
-        message.success("Login successful!");
-        navigate("/");
-      },
-      onError: (error: any) => {
-        message.error(error?.message || "Login failed. Please try again.");
-        setLoading(false);
-      },
-    });
+    login(values);
   };
 
   const handleGoogleLogin = async () => {
@@ -46,18 +37,6 @@ export const FirebaseLoginPage: React.FC = () => {
         {
           email: result.user.email || "",
           password: "google_auth", // This will be handled differently in the auth provider
-        },
-        {
-          onSuccess: () => {
-            message.success("Google login successful!");
-            navigate("/");
-          },
-          onError: (error: any) => {
-            message.error(
-              error?.message || "Google login failed. Please try again."
-            );
-            setGoogleLoading(false);
-          },
         }
       );
     } catch (error: any) {

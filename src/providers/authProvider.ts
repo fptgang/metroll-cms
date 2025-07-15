@@ -49,6 +49,18 @@ export const authProvider: AuthProvider = {
         }
       );
 
+      if (response.data.role != "ADMIN" && response.data.role != "STAFF") {
+        await firebaseSignOut(auth);
+        return {
+          success: false,
+          redirectTo: "/login",
+          error: {
+            name: "LoginError",
+            message: "Unauthorized access",
+          },
+        };
+      }
+
       localStorage.setItem("user", JSON.stringify(response.data));
       localStorage.setItem("auth_token", idToken);
 
@@ -57,6 +69,7 @@ export const authProvider: AuthProvider = {
         redirectTo: "/",
       };
     } catch (error: any) {
+      await firebaseSignOut(auth);
       return {
         success: false,
         error: {
