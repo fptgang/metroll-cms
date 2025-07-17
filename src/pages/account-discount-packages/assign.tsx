@@ -22,11 +22,11 @@ export const AccountDiscountPackageAssign: React.FC = () => {
   let account = location.state;
   // Get active discount packages for selection
   const { data: discountPackagesData, isLoading: loadingPackages } =
-    useDiscountPackages(0, 100, { status: "ACTIVE" });
+    useDiscountPackages(0, 100, {}, { status: "ACTIVE" });
   const { data: accountsData, isLoading: loadingAccounts } = useAccounts(
     0,
     100,
-      new Record<string, SortDirection>(),
+    {},
     { role: AccountRole.CUSTOMER, active: true }
   );
 

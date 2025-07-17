@@ -87,7 +87,7 @@ export const AccountList: React.FC = () => {
   const total = data?.totalElements || 0;
 
   return (
-    <Card title="Accounts" extra={<CreateButton />} style={{ margin: "16px" }}>
+    <Card title="Accounts" extra={perm.data === "ADMIN" && <CreateButton />} style={{ margin: "16px" }}>
       <Space direction="vertical" size="middle" style={{ width: "100%" }}>
         <Input.Search
           placeholder="Search accounts..."

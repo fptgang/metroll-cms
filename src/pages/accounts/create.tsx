@@ -81,7 +81,6 @@ export const AccountCreate: React.FC = () => {
             ]}
           >
             <Select placeholder="Select role">
-              <Select.Option value={AccountRole.ADMIN}>Admin</Select.Option>
               <Select.Option value={AccountRole.STAFF}>Staff</Select.Option>
               <Select.Option value={AccountRole.CUSTOMER}>
                 Customer
