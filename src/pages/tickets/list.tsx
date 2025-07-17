@@ -82,7 +82,7 @@ export const TicketList: React.FC = () => {
   const total = data?.totalElements || 0;
 
   return (
-    <Card title="Tickets" extra={<CreateButton />} style={{ margin: "16px" }}>
+    <Card title="Tickets" extra={false && <CreateButton />} style={{ margin: "16px" }}>
       <Space direction="vertical" size="middle" style={{ width: "100%" }}>
         <Input.Search
           placeholder="Search tickets..."
@@ -144,8 +144,8 @@ export const TicketList: React.FC = () => {
             render={(_: unknown, record: TicketDto) => (
               <Space>
                 <ShowButton hideText size="small" recordItemId={record.id} />
-                <EditButton hideText size="small" recordItemId={record.id} />
-                <DeleteButton hideText size="small" recordItemId={record.id} />
+                {/* <EditButton hideText size="small" recordItemId={record.id} /> */}
+                {/* <DeleteButton hideText size="small" recordItemId={record.id} /> */}
               </Space>
             )}
           />
