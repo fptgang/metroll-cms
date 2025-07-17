@@ -85,17 +85,7 @@ export const OrderShow: React.FC = () => {
   const { orderNumber } = useParams<{ orderNumber: string }>();
   const navigate = useNavigate();
   const { data: record, isLoading, error } = useOrder(orderNumber!);
-  const [voucher, setVoucher] = React.useState<VoucherDto>({
-    id: "",
-    discountAmount: 0,
-    minTransactionAmount: 0,
-    ownerId: "",
-    code: "",
-    createdAt: "",
-    updatedAt: "",
-    validFrom: "",
-    validUntil: "",
-  });
+  const [voucher, setVoucher] = React.useState<VoucherDto>();
   const [account, setAccount] = React.useState<AccountDto | null>(null);
   const [p2pTickets, setP2pTickets] = React.useState<P2PJourneyDto[]>([]);
   const [timedTickets, setTimedTickets] = React.useState<TimedTicketPlanDto[]>(
@@ -417,7 +407,7 @@ export const OrderShow: React.FC = () => {
                     <div className="flex justify-between items-center">
                       <Text strong>{record.voucher}</Text>
                       <Text style={{ color: "#52c41a" }}>
-                        -{formatCurrency(voucher.discountAmount)}
+                        -{formatCurrency(voucher?.discountAmount || 0)}
                       </Text>
                     </div>
                   </div>
