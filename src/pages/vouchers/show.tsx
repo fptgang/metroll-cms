@@ -63,8 +63,8 @@ export const VoucherShow: React.FC = () => {
 
         <Row gutter={[16, 16]}>
           <Col span={12}>
-            <Title level={5}>Owner ID</Title>
-            <Text>{voucher.ownerId}</Text>
+            <Title level={5}>Owner</Title>
+            <Text>{voucher.owner.fullName} (#{voucher.ownerId})</Text>
           </Col>
           <Col span={12}>
             <Title level={5}>Voucher Code</Title>

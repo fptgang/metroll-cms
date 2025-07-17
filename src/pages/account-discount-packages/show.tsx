@@ -2,7 +2,7 @@ import React from "react";
 import { useNavigate, useParams } from "react-router";
 import { Card, Descriptions, Tag, Button, Spin } from "antd";
 import { ArrowLeftOutlined, EditOutlined } from "@ant-design/icons";
-import { useAccountDiscountPackage } from "../../hooks";
+import { useAccountDiscountPackage, useDiscountPackage } from "../../hooks";
 import { formatDate } from "../../utils/formatDate";
 
 export const AccountDiscountPackageShow: React.FC = () => {
@@ -12,7 +12,12 @@ export const AccountDiscountPackageShow: React.FC = () => {
     id!
   );
 
-  if (isLoading) {
+  // Fetch discount package details
+  const { data: discountPackage, isLoading: isLoadingDiscountPackage } = useDiscountPackage(
+    accountDiscountPackage?.discountPackageId || ""
+  );
+
+  if (isLoading || isLoadingDiscountPackage) {
     return (
       <Card style={{ margin: "16px" }}>
         <div style={{ textAlign: "center", padding: "50px" }}>
@@ -51,12 +56,36 @@ export const AccountDiscountPackageShow: React.FC = () => {
         size="middle"
         labelStyle={{ fontWeight: "bold" }}
       >
-        <Descriptions.Item label="Account ID">
-          <Tag color="blue">{accountDiscountPackage.accountId}</Tag>
+        <Descriptions.Item label="Account">
+          {accountDiscountPackage.account.fullName} (#
+          {accountDiscountPackage.accountId})
         </Descriptions.Item>
 
-        <Descriptions.Item label="Discount Package ID">
-          <Tag color="green">{accountDiscountPackage.discountPackageId}</Tag>
+        <Descriptions.Item label="Discount Package">
+          <div>
+            <div>
+              <strong>{discountPackage?.name || "Loading..."}</strong>
+            </div>
+            <div style={{ marginTop: "8px", color: "#666" }}>
+              {discountPackage?.description}
+            </div>
+            <div style={{ marginTop: "8px" }}>
+              <Tag color="green">ID: {accountDiscountPackage.discountPackageId}</Tag>
+              {discountPackage && (
+                <>
+                  <Tag color="blue">
+                    {Math.round(discountPackage.discountPercentage * 100)}% OFF
+                  </Tag>
+                  <Tag color="orange">
+                    {discountPackage.duration} days
+                  </Tag>
+                  <Tag color={discountPackage.status === "ACTIVE" ? "green" : "red"}>
+                    {discountPackage.status}
+                  </Tag>
+                </>
+              )}
+            </div>
+          </div>
         </Descriptions.Item>
 
         <Descriptions.Item label="Activation Date">

@@ -244,8 +244,8 @@ export const TicketValidationList: React.FC = () => {
             )}
           />
           <Table.Column
-            dataIndex="validatorId"
-            title="Validator ID"
+            dataIndex={["validator", "fullName"]}
+            title="Validator"
             render={(value: string) => (
               <Text style={{ fontFamily: "monospace", fontSize: "12px" }}>
                 {value}

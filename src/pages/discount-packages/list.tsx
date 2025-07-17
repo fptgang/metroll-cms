@@ -32,7 +32,9 @@ export const DiscountPackageList: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<
     "ACTIVE" | "TERMINATED" | ""
   >("");
-  const [sort, setSort] = useState<Record<string, SortDirection>>();
+  const [sort, setSort] = useState<Record<string, SortDirection>>({
+    createdAt: SortDirection.DESC
+  });
   const perm = usePermissions();
 
   const filters = {
@@ -86,7 +88,7 @@ export const DiscountPackageList: React.FC = () => {
   return (
     <Card
       title="Discount Packages"
-      extra={<CreateButton />}
+      extra={perm.data === 'ADMIN' && <CreateButton />}
       style={{ margin: "16px" }}
     >
       <Space direction="vertical" size="middle" style={{ width: "100%" }}>

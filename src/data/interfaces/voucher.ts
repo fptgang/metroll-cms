@@ -1,9 +1,11 @@
 import { BaseEntity } from "./common";
 import { VoucherStatus } from "../types/enums";
+import {AccountDto} from "./account";
 
 // Voucher DTO - mirrors VoucherDto.java
 export interface VoucherDto extends BaseEntity {
   ownerId: string;
+  owner: AccountDto;
   code?: string;
   discountAmount: number;
   minTransactionAmount: number;

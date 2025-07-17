@@ -98,13 +98,13 @@ export const AccountShow: React.FC = () => {
         <Row gutter={[16, 16]}>
           <Col span={12}>
             <Title level={5}>Created At</Title>
-            <Text>{new Date(account.createdAt*1000).toLocaleDateString()}</Text>
+            <Text>{new Date(parseInt(account.createdAt)*1000).toLocaleDateString()}</Text>
           </Col>
           <Col span={12}>
             <Title level={5}>Updated At</Title>
             <Text>
               {account.updatedAt
-                ? new Date(account.updatedAt*1000).toLocaleDateString()
+                ? new Date(parseInt(account.updatedAt)*1000).toLocaleDateString()
                 : "Not updated"}
             </Text>
           </Col>

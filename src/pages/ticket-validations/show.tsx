@@ -120,10 +120,10 @@ export const TicketValidationShow: React.FC = () => {
         <Row gutter={[16, 16]}>
           <Col span={12}>
             <Title level={5}>
-              <UserOutlined /> Validator ID
+              <UserOutlined /> Validator
             </Title>
             <Text style={{ fontFamily: "monospace" }}>
-              {validation.validatorId}
+              {validation.validator.fullName} (#{validation.validatorId})
             </Text>
           </Col>
           <Col span={12}>

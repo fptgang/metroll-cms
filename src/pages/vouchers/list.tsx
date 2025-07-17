@@ -12,7 +12,9 @@ export const VoucherList: React.FC = () => {
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
   const perm = usePermissions();
-  const [sort, setSort] = useState<Record<string, SortDirection>>();
+  const [sort, setSort] = useState<Record<string, SortDirection>>({
+    createdAt: SortDirection.DESC
+  });
 
   const { data, isLoading } = useVouchers(page, size, sort);
   const deleteMutation = useDeleteVoucher();
@@ -30,16 +32,26 @@ export const VoucherList: React.FC = () => {
   const handleTableChange = (pagination: any, filters: any, sorter: any) => {
     const newSort: Record<string, SortDirection> = {};
     
+    // Helper function to convert field to consistent string format
+    const getFieldKey = (field: string | string[]) => {
+      if (Array.isArray(field)) {
+        return field.join('.');
+      }
+      return field;
+    };
+    
     // Handle multiple column sorting
     if (Array.isArray(sorter)) {
       sorter.forEach((s) => {
         if (s.field && s.order) {
-          newSort[s.field] = s.order === 'ascend' ? SortDirection.ASC : SortDirection.DESC;
+          const fieldKey = getFieldKey(s.field);
+          newSort[fieldKey] = s.order === 'ascend' ? SortDirection.ASC : SortDirection.DESC;
         }
       });
     } else if (sorter.field && sorter.order) {
       // Handle single column sorting
-      newSort[sorter.field] = sorter.order === 'ascend' ? SortDirection.ASC : SortDirection.DESC;
+      const fieldKey = getFieldKey(sorter.field);
+      newSort[fieldKey] = sorter.order === 'ascend' ? SortDirection.ASC : SortDirection.DESC;
     }
     
     setSort(Object.keys(newSort).length > 0 ? newSort : undefined);
@@ -86,9 +98,9 @@ export const VoucherList: React.FC = () => {
           onChange={handleTableChange}
         >
           <Table.Column
-              dataIndex="ownerId"
-              title="Owner ID"
-              {...getSorterProps('ownerId')}
+              dataIndex={["owner", "fullName"]}
+              title="Owner"
+              {...getSorterProps('owner.fullName')}
           />
           {perm.data === 'ADMIN' && <Table.Column
             dataIndex="code"

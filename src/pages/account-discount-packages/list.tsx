@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { ShowButton, DeleteButton, CreateButton } from "@refinedev/antd";
 import {
   Table,
@@ -13,10 +13,11 @@ import {
 } from "antd";
 import type { SortOrder } from "antd/es/table/interface";
 import { SearchOutlined, UserOutlined, GiftOutlined } from "@ant-design/icons";
-import {AccountDiscountPackageDto, SortDirection} from "../../data/interfaces";
+import {AccountDiscountPackageDto, SortDirection, DiscountPackageDto} from "../../data/interfaces";
 import {
   useAccountDiscountPackages,
   useUnassignDiscountPackage,
+  useDiscountPackages,
 } from "../../hooks";
 import { formatDate } from "../../utils/formatDate";
 
@@ -25,7 +26,9 @@ const { Option } = Select;
 export const AccountDiscountPackageList: React.FC = () => {
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
-  const [sort, setSort] = useState<Record<string, SortDirection>>();
+  const [sort, setSort] = useState<Record<string, SortDirection>>({
+    createdAt: SortDirection.DESC
+  });
   const [accountIdFilter, setAccountIdFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState<
     "ACTIVATED" | "EXPIRED" | "CANCELLED" | ""
@@ -44,6 +47,25 @@ export const AccountDiscountPackageList: React.FC = () => {
   );
   const unassignMutation = useUnassignDiscountPackage();
 
+  // Fetch all discount packages to get names
+  const { data: discountPackagesData, isLoading: isLoadingDiscountPackages } = useDiscountPackages(
+    0, // page
+    1000, // size - fetch a large number to get all packages
+    {}, // sort
+    undefined // filters
+  );
+
+  // Create mapping from ID to name
+  const discountPackageMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    if (discountPackagesData?.content) {
+      discountPackagesData.content.forEach((pkg) => {
+        map[pkg.id] = pkg.name;
+      });
+    }
+    return map;
+  }, [discountPackagesData?.content]);
+
   const handleUnassign = (id: string) => {
     unassignMutation.mutate(id);
   };
@@ -52,19 +74,29 @@ export const AccountDiscountPackageList: React.FC = () => {
   const handleTableChange = (pagination: any, filters: any, sorter: any) => {
     const newSort: Record<string, SortDirection> = {};
     
+    // Helper function to convert field to consistent string format
+    const getFieldKey = (field: string | string[]) => {
+      if (Array.isArray(field)) {
+        return field.join('.');
+      }
+      return field;
+    };
+    
     // Handle multiple column sorting
     if (Array.isArray(sorter)) {
       sorter.forEach((s) => {
         if (s.field && s.order) {
-          newSort[s.field] = s.order === 'ascend' ? SortDirection.ASC : SortDirection.DESC;
+          const fieldKey = getFieldKey(s.field);
+          newSort[fieldKey] = s.order === 'ascend' ? SortDirection.ASC : SortDirection.DESC;
         }
       });
     } else if (sorter.field && sorter.order) {
       // Handle single column sorting
-      newSort[sorter.field] = sorter.order === 'ascend' ? SortDirection.ASC : SortDirection.DESC;
+      const fieldKey = getFieldKey(sorter.field);
+      newSort[fieldKey] = sorter.order === 'ascend' ? SortDirection.ASC : SortDirection.DESC;
     }
     
-    setSort(Object.keys(newSort).length > 0 ? newSort : undefined);
+    setSort(Object.keys(newSort).length > 0 ? newSort : { createdAt: SortDirection.DESC });
   };
 
   // Convert sort state to antd sorter format for controlled sorting
@@ -110,7 +142,7 @@ export const AccountDiscountPackageList: React.FC = () => {
         <Table
           dataSource={accountDiscountPackages}
           rowKey="id"
-          loading={isLoading}
+          loading={isLoading || isLoadingDiscountPackages}
           pagination={false}
           onChange={handleTableChange}
         >
@@ -121,15 +153,19 @@ export const AccountDiscountPackageList: React.FC = () => {
             width="50px"
           />
           <Table.Column
-            dataIndex="accountId"
-            title="Account ID"
+            dataIndex={["account", "fullName"]}
+            title="Account"
             render={(value: string) => <Tag color="blue">{value}</Tag>}
-            {...getSorterProps('accountId')}
+            {...getSorterProps('account.fullName')}
           />
           <Table.Column
             dataIndex="discountPackageId"
-            title="Package ID"
-            render={(value: string) => <Tag color="green">{value}</Tag>}
+            title="Package"
+            render={(value: string) => (
+              <Tag color="green">
+                {discountPackageMap[value] || value}
+              </Tag>
+            )}
             {...getSorterProps('discountPackageId')}
           />
           <Table.Column

@@ -107,7 +107,7 @@ export const AccountDiscountPackageAssign: React.FC = () => {
                 .includes(input.toLowerCase())
             }
           >
-            {discountPackages.map((pkg) => (
+            {discountPackages.filter((pkg) => pkg.status === "ACTIVE").map((pkg) => (
               <Option key={pkg.id} value={pkg.id}>
                 {pkg.name} ({(pkg.discountPercentage * 100).toFixed(0)}% off,{" "}
                 {pkg.duration} days)
