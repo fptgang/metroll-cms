@@ -1,17 +1,19 @@
 import React from "react";
-import { Show } from "@refinedev/antd";
-import { Typography, Card, Row, Col, Divider, Tag, Spin } from "antd";
-import { DollarOutlined } from "@ant-design/icons";
-import { useVoucher } from "../../hooks";
-import { useParams } from "react-router";
-import { VoucherStatus } from "../../data";
-import { formatDate } from "../../utils/formatDate";
+import {Show} from "@refinedev/antd";
+import {Card, Col, Divider, Row, Spin, Tag, Typography} from "antd";
+import {DollarOutlined} from "@ant-design/icons";
+import {useVoucher} from "../../hooks";
+import {useParams} from "react-router";
+import {VoucherStatus} from "../../data";
+import {formatDate} from "../../utils/formatDate";
+import {usePermissions} from "@refinedev/core";
 
 const { Title, Text } = Typography;
 
 export const VoucherShow: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { data: voucher, isLoading } = useVoucher(id!);
+  const perm = usePermissions();
 
   if (isLoading) {
     return (
@@ -41,19 +43,21 @@ export const VoucherShow: React.FC = () => {
   };
 
   return (
-    <Show>
+    <Show
+        canEdit={(perm.data === "ADMIN" || perm.data === "STAFF") && voucher.status === VoucherStatus.VALID}
+        canDelete={(perm.data === "ADMIN" || perm.data === "STAFF") && voucher.status === VoucherStatus.VALID}>
       <Card>
         <Row gutter={[16, 16]}>
           <Col span={24} style={{ textAlign: "center", marginBottom: 16 }}>
             <Title level={2} style={{ fontFamily: "monospace" }}>
               {voucher.code}
             </Title>
-            <Tag
+            {perm.data === 'ADMIN' && <Tag
               color={getStatusColor(voucher.status || null)}
               style={{ fontSize: "16px", padding: "8px 16px" }}
             >
               {voucher.status}
-            </Tag>
+            </Tag>}
           </Col>
         </Row>
 
@@ -64,9 +68,9 @@ export const VoucherShow: React.FC = () => {
           </Col>
           <Col span={12}>
             <Title level={5}>Voucher Code</Title>
-            <Text style={{ fontFamily: "monospace", fontWeight: "bold" }}>
+            {perm.data === 'ADMIN' ? <Text style={{ fontFamily: "monospace", fontWeight: "bold" }}>
               {voucher.code}
-            </Text>
+            </Text> : <div className="h-8 w-32 bg-gray-800"></div>}
           </Col>
         </Row>
 
@@ -75,7 +79,7 @@ export const VoucherShow: React.FC = () => {
         <Row gutter={[16, 16]}>
           <Col span={12}>
             <Title level={5}>Discount Amount</Title>
-            <Text style={{ fontSize: "18px", color: "#52c41a" }}>
+            <Text style={{ fontSize: "16px" }}>
               <DollarOutlined /> {voucher.discountAmount.toLocaleString()}
             </Text>
           </Col>

@@ -6,6 +6,7 @@ import { useVoucher, useUpdateVoucher } from "../../hooks";
 import { useParams, useNavigate } from "react-router";
 import dayjs from "dayjs";
 import { formatDate } from "../../utils/formatDate";
+import {usePermissions} from "@refinedev/core";
 
 const { RangePicker } = DatePicker;
 
@@ -15,12 +16,16 @@ export const VoucherEdit: React.FC = () => {
   const { data: voucher, isLoading } = useVoucher(id!);
   const updateMutation = useUpdateVoucher();
   const navigate = useNavigate();
+  const perm = usePermissions();
 
   useEffect(() => {
     if (voucher) {
       form.setFieldsValue({
         ...voucher,
-        dateRange: [dayjs(voucher.validFrom), dayjs(voucher.validUntil)],
+        dateRange: [
+          dayjs(formatDate(voucher?.validFrom || "")),
+          dayjs(formatDate(voucher?.validUntil || ""))
+        ],
       });
     }
   }, [voucher, form]);
@@ -51,6 +56,7 @@ export const VoucherEdit: React.FC = () => {
         loading: updateMutation.isPending,
         onClick: () => form.submit(),
       }}
+      canDelete={perm.data === "ADMIN" || perm.data === "STAFF"}
     >
       <Form form={form} onFinish={onFinish} layout="vertical">
         <Card title="Edit Voucher">

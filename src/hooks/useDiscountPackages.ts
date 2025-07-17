@@ -8,7 +8,7 @@ import {
   AccountDiscountAssignRequest,
   DiscountPackageFilter,
   AccountDiscountPackageFilter,
-  PageableDto,
+  PageableDto, SortDirection,
 } from "../data/interfaces";
 import { discountService } from "../data/services";
 
@@ -19,16 +19,18 @@ const QUERY_KEYS = {
   discountPackagesPage: (
     page: number,
     size: number,
+    sort?: Record<string, SortDirection>,
     filters?: DiscountPackageFilter
-  ) => ["discount-packages", "page", page, size, filters] as const,
+  ) => ["discount-packages", "page", page, size, sort, filters] as const,
   accountDiscountPackages: ["account-discount-packages"] as const,
   accountDiscountPackage: (id: string) =>
     ["account-discount-packages", id] as const,
   accountDiscountPackagesPage: (
     page: number,
     size: number,
+    sort?: Record<string, SortDirection>,
     filters?: AccountDiscountPackageFilter
-  ) => ["account-discount-packages", "page", page, size, filters] as const,
+  ) => ["account-discount-packages", "page", page, size, sort, filters] as const,
 };
 
 // Discount Package Hooks
@@ -37,11 +39,12 @@ const QUERY_KEYS = {
 export const useDiscountPackages = (
   page: number = 0,
   size: number = 10,
+  sort: Record<string, SortDirection> = {},
   filters?: DiscountPackageFilter
 ) => {
   return useQuery({
-    queryKey: QUERY_KEYS.discountPackagesPage(page, size, filters),
-    queryFn: () => discountService.getDiscountPackages({ page, size }, filters),
+    queryKey: QUERY_KEYS.discountPackagesPage(page, size, sort, filters),
+    queryFn: () => discountService.getDiscountPackages({ page, size, sort }, filters),
   });
 };
 
@@ -122,12 +125,13 @@ export const useTerminateDiscountPackage = () => {
 export const useAccountDiscountPackages = (
   page: number = 0,
   size: number = 10,
+  sort: Record<string, SortDirection> = {},
   filters?: AccountDiscountPackageFilter
 ) => {
   return useQuery({
-    queryKey: QUERY_KEYS.accountDiscountPackagesPage(page, size, filters),
+    queryKey: QUERY_KEYS.accountDiscountPackagesPage(page, size, sort, filters),
     queryFn: () =>
-      discountService.getAccountDiscountPackages({ page, size }, filters),
+      discountService.getAccountDiscountPackages({ page, size, sort }, filters),
   });
 };
 

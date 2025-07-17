@@ -1,30 +1,20 @@
-import React, { useState } from "react";
-import {
-  EditButton,
-  ShowButton,
-  DeleteButton,
-  CreateButton,
-} from "@refinedev/antd";
-import { Table, Space, Tag, Card, Input, Pagination, Button } from "antd";
-import {
-  SearchOutlined,
-  DollarOutlined,
-  DeleteOutlined,
-} from "@ant-design/icons";
-import { VoucherDto, VoucherStatus } from "../../data";
-import {
-  useVouchers,
-  useDeleteVoucher,
-  useUpdateVoucherStatus,
-} from "../../hooks";
-import { formatDate } from "../../utils/formatDate";
+import React, {useState} from "react";
+import {CreateButton, EditButton, ShowButton,} from "@refinedev/antd";
+import {Button, Card, Pagination, Space, Table, Tag} from "antd";
+import type { SortOrder } from "antd/es/table/interface";
+import {DeleteOutlined, DollarOutlined,} from "@ant-design/icons";
+import {SortDirection, VoucherDto, VoucherStatus} from "../../data";
+import {useDeleteVoucher, useUpdateVoucherStatus, useVouchers,} from "../../hooks";
+import {formatDate} from "../../utils/formatDate";
+import {usePermissions} from "@refinedev/core";
 
 export const VoucherList: React.FC = () => {
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
-  const [searchQuery, setSearchQuery] = useState("");
+  const perm = usePermissions();
+  const [sort, setSort] = useState<Record<string, SortDirection>>();
 
-  const { data, isLoading } = useVouchers(page, size);
+  const { data, isLoading } = useVouchers(page, size, sort);
   const deleteMutation = useDeleteVoucher();
   const updateStatusMutation = useUpdateVoucherStatus();
 
@@ -34,6 +24,34 @@ export const VoucherList: React.FC = () => {
 
   const handleStatusChange = (id: string, status: VoucherStatus) => {
     updateStatusMutation.mutate({ id, status });
+  };
+
+  // Handle table changes including sorting
+  const handleTableChange = (pagination: any, filters: any, sorter: any) => {
+    const newSort: Record<string, SortDirection> = {};
+    
+    // Handle multiple column sorting
+    if (Array.isArray(sorter)) {
+      sorter.forEach((s) => {
+        if (s.field && s.order) {
+          newSort[s.field] = s.order === 'ascend' ? SortDirection.ASC : SortDirection.DESC;
+        }
+      });
+    } else if (sorter.field && sorter.order) {
+      // Handle single column sorting
+      newSort[sorter.field] = sorter.order === 'ascend' ? SortDirection.ASC : SortDirection.DESC;
+    }
+    
+    setSort(Object.keys(newSort).length > 0 ? newSort : undefined);
+  };
+
+  // Convert sort state to antd sorter format for controlled sorting
+  const getSorterProps = (field: string) => {
+    const sortDirection = sort?.[field];
+    return {
+      sorter: true,
+      sortOrder: sortDirection ? (sortDirection === SortDirection.ASC ? 'ascend' : 'descend') as SortOrder : undefined,
+    };
   };
 
   const getStatusColor = (status: VoucherStatus) => {
@@ -59,21 +77,20 @@ export const VoucherList: React.FC = () => {
   return (
     <Card title="Vouchers" extra={<CreateButton />} style={{ margin: "16px" }}>
       <Space direction="vertical" size="middle" style={{ width: "100%" }}>
-        <Input.Search
-          placeholder="Search vouchers..."
-          allowClear
-          onSearch={setSearchQuery}
-          style={{ width: 300 }}
-          enterButton={<SearchOutlined />}
-        />
 
         <Table
           dataSource={vouchers}
           rowKey="id"
           loading={isLoading}
           pagination={false}
+          onChange={handleTableChange}
         >
           <Table.Column
+              dataIndex="ownerId"
+              title="Owner ID"
+              {...getSorterProps('ownerId')}
+          />
+          {perm.data === 'ADMIN' && <Table.Column
             dataIndex="code"
             title="Voucher Code"
             render={(value) => (
@@ -81,7 +98,8 @@ export const VoucherList: React.FC = () => {
                 {value}
               </span>
             )}
-          />
+            {...getSorterProps('code')}
+          />}
           <Table.Column
             dataIndex="discountAmount"
             title="Discount Amount"
@@ -90,6 +108,7 @@ export const VoucherList: React.FC = () => {
                 <DollarOutlined /> {value.toLocaleString()}
               </span>
             )}
+            {...getSorterProps('discountAmount')}
           />
           <Table.Column
             dataIndex="minTransactionAmount"
@@ -99,6 +118,7 @@ export const VoucherList: React.FC = () => {
                 <DollarOutlined /> {value.toLocaleString()}
               </span>
             )}
+            {...getSorterProps('minTransactionAmount')}
           />
           <Table.Column
             dataIndex="status"
@@ -106,21 +126,25 @@ export const VoucherList: React.FC = () => {
             render={(value: VoucherStatus) => (
               <Tag color={getStatusColor(value)}>{value}</Tag>
             )}
+            {...getSorterProps('status')}
           />
           <Table.Column
             dataIndex="validFrom"
             title="Valid From"
             render={(value: string) => formatDate(value)}
+            {...getSorterProps('validFrom')}
           />
           <Table.Column
             dataIndex="validUntil"
             title="Valid Until"
             render={(value: string) => formatDate(value)}
+            {...getSorterProps('validUntil')}
           />
           <Table.Column
             dataIndex="createdAt"
             title="Created At"
             render={(value: string) => formatDate(value)}
+            {...getSorterProps('createdAt')}
           />
           <Table.Column
             title="Actions"
@@ -128,36 +152,15 @@ export const VoucherList: React.FC = () => {
             render={(_: unknown, record: VoucherDto) => (
               <Space>
                 <ShowButton hideText size="small" recordItemId={record.id} />
-                <EditButton hideText size="small" recordItemId={record.id} />
-                {/* {record.status === VoucherStatus.VALID && (
+                {((perm.data === "ADMIN" || perm.data === "STAFF") && record.status == VoucherStatus.VALID) && <>
+                  <EditButton hideText size="small" recordItemId={record.id} />
                   <Button
-                    size="small"
-                    type="primary"
-                    danger
-                    onClick={() =>
-                      handleStatusChange(record.id, VoucherStatus.REVOKED)
-                    }
-                  >
-                    Revoke
-                  </Button>
-                )} */}
-                {record.status === VoucherStatus.REVOKED && (
-                  <Button
-                    size="small"
-                    type="primary"
-                    onClick={() =>
-                      handleStatusChange(record.id, VoucherStatus.VALID)
-                    }
-                  >
-                    Activate
-                  </Button>
-                )}
-                <Button
-                  danger
-                  icon={<DeleteOutlined />}
-                  size="small"
-                  onClick={() => handleDelete(record.id)}
-                />
+                      danger
+                      icon={<DeleteOutlined />}
+                      size="small"
+                      onClick={() => handleDelete(record.id)}
+                  />
+                </>}
               </Space>
             )}
           />

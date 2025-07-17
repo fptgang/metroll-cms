@@ -1,4 +1,4 @@
-import { GitHubBanner, Refine, WelcomePage } from "@refinedev/core";
+import {GitHubBanner, Refine, usePermissions, WelcomePage} from "@refinedev/core";
 import { DevtoolsPanel, DevtoolsProvider } from "@refinedev/devtools";
 import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
 import {
@@ -22,6 +22,8 @@ import {
   RetweetOutlined,
   CheckOutlined,
 } from "@ant-design/icons";
+
+import { ThemedHeader } from "./components/header";
 
 import routerBindings, {
   DocumentTitleHandler,
@@ -102,9 +104,356 @@ import {
   AccountDiscountPackageShow,
 } from "./pages/account-discount-packages";
 
+interface InnerAppProps {
+  isAuthenticated: boolean | null;
+}
+
+function InnerApp({ isAuthenticated }: InnerAppProps) {
+  const perm = usePermissions();
+
+  return <DevtoolsProvider>
+    <Refine
+        authProvider={authProvider}
+        routerProvider={routerBindings}
+        notificationProvider={useNotificationProvider}
+        resources={[
+          {
+            name: "dashboard",
+            list: "/",
+            meta: {
+              label: "Dashboard",
+              icon: <DashboardOutlined />,
+            },
+          },
+          {
+            name: "account",
+            list: "/accounts",
+            create: "/accounts/create",
+            edit: "/accounts/edit/:id",
+            show: "/accounts/show/:id",
+            meta: {
+              label: "Accounts",
+              icon: <UserOutlined />,
+              parent: "Account Management",
+              canDelete: true,
+            },
+          },
+          {
+            name: "ticket",
+            list: "/tickets",
+            create: "/tickets/create",
+            edit: "/tickets/edit/:id",
+            show: "/tickets/show/:id",
+            meta: {
+              label: "Tickets",
+              icon: <ContactsOutlined />,
+              parent: "Ticket Management",
+              canDelete: true,
+            },
+          },
+          {
+            name: "ticket-validation",
+            list: "/ticket-validations",
+            show: "/ticket-validations/show/:id",
+            meta: {
+              label: "Ticket Validations",
+              icon: <CheckOutlined />,
+              parent: "Ticket Management",
+              canDelete: false,
+            },
+          },
+          {
+            name: "voucher",
+            list: "/vouchers",
+            create: "/vouchers/create",
+            edit: "/vouchers/edit/:id",
+            show: "/vouchers/show/:id",
+            meta: {
+              label: "Vouchers",
+              icon: <TagOutlined />,
+              parent: "Account Management",
+              canDelete: true,
+            },
+          },
+          {
+            name: "staff",
+            list: "/staff",
+            meta: {
+              label: "Staff",
+              icon: <TeamOutlined />,
+              parent: "Account Management",
+              hide: perm.data !== "ADMIN",
+            },
+          },
+          {
+            name: "p2p-journey",
+            list: "/p2p-journeys",
+            create: "/p2p-journeys/create",
+            edit: "/p2p-journeys/edit/:id",
+            show: "/p2p-journeys/show/:id",
+            meta: {
+              label: "P2P Journeys",
+              icon: <TagOutlined />,
+              parent: "Ticket Management",
+              canDelete: true,
+            },
+          },
+          {
+            name: "timed-ticket-plan",
+            list: "/timed-ticket-plans",
+            create: "/timed-ticket-plans/create",
+            edit: "/timed-ticket-plans/edit/:id",
+            show: "/timed-ticket-plans/show/:id",
+            meta: {
+              label: "Timed Ticket Plans",
+              icon: <TagOutlined />,
+              parent: "Ticket Management",
+              canDelete: true,
+            },
+          },
+          {
+            name: "station",
+            list: "/stations",
+            create: "/stations/create",
+            edit: "/stations/edit/:id",
+            show: "/stations/show/:id",
+            meta: {
+              label: "Stations",
+              icon: <EnvironmentOutlined />,
+              parent: "Subway Management",
+              canDelete: true,
+            },
+          },
+          {
+            name: "metro-line",
+            list: "/metro-lines",
+            create: "/metro-lines/create",
+            edit: "/metro-lines/edit/:id",
+            show: "/metro-lines/show/:id",
+            meta: {
+              label: "Metro Lines",
+              icon: <MergeOutlined />,
+              parent: "Subway Management",
+              canDelete: true,
+            },
+          },
+          {
+            name: "orders",
+            list: "/orders",
+            create: "/orders/create",
+            edit: "/orders/edit/:orderNumber",
+            show: "/orders/show/:orderNumber",
+            meta: {
+              label: "Orders",
+              icon: <ShoppingCartOutlined />,
+              parent: "Order Management",
+              canDelete: true,
+            },
+          },
+          {
+            name: "discount-packages",
+            list: "/discount-packages",
+            create: "/discount-packages/create",
+            edit: "/discount-packages/edit/:id",
+            show: "/discount-packages/show/:id",
+            meta: {
+              label: "Discount Packages",
+              icon: <GiftOutlined />,
+              parent: "Account Management",
+              canDelete: true,
+            },
+          },
+          {
+            name: "account-discount-packages",
+            list: "/account-discount-packages",
+            create: "/account-discount-packages/assign",
+            edit: "/account-discount-packages/edit/:id",
+            show: "/account-discount-packages/show/:id",
+            meta: {
+              label: "Account Discount Packages",
+              icon: <RetweetOutlined />,
+              parent: "Account Management",
+              canDelete: true,
+            },
+          },
+        ]}
+        options={{
+          syncWithLocation: true,
+          warnWhenUnsavedChanges: true,
+          useNewQueryKeys: true,
+          projectId: "BS4brD-dWcDtG-ry1qOK",
+          title: {
+            text: "Metroll",
+          }
+        }}
+    >
+      <Routes>
+        {/* Show login page if not authenticated */}
+        {!isAuthenticated ? (
+            <Route path="*" element={<FirebaseLoginPage />} />
+        ) : (
+            /* Show main app if authenticated */
+                            <Route
+                element={
+                  <ThemedLayoutV2
+                      Header={(props) => (
+                          <ThemedHeader {...props} />
+                      )}
+                      Sider={(props) => (
+                          <ThemedSiderV2 {...props} fixed />
+                      )}
+                  >
+                    <Outlet />
+                  </ThemedLayoutV2>
+                }
+            >
+              <Route index element={<Dashboard />} />
+
+              {/* Account Routes */}
+              <Route path="/accounts">
+                <Route index element={<AccountList />} />
+                <Route path="create" element={<AccountCreate />} />
+                <Route path="edit/:id" element={<AccountEdit />} />
+                <Route path="show/:id" element={<AccountShow />} />
+              </Route>
+
+              {/* Ticket Routes */}
+              <Route path="/tickets">
+                <Route index element={<TicketList />} />
+                <Route path="create" element={<TicketCreate />} />
+                <Route path="edit/:id" element={<TicketEdit />} />
+                <Route path="show/:id" element={<TicketShow />} />
+              </Route>
+
+              {/* Ticket Validation Routes */}
+              <Route path="/ticket-validations">
+                <Route index element={<TicketValidationList />} />
+                <Route
+                    path="show/:id"
+                    element={<TicketValidationShow />}
+                />
+              </Route>
+
+              {/* Voucher Routes */}
+              <Route path="/vouchers">
+                <Route index element={<VoucherList />} />
+                <Route path="create" element={<VoucherCreate />} />
+                <Route path="edit/:id" element={<VoucherEdit />} />
+                <Route path="show/:id" element={<VoucherShow />} />
+              </Route>
+
+              {/* Staff Routes */}
+              <Route path="/staff">
+                <Route index element={<StaffList />} />
+              </Route>
+
+              {/* Discount Package Routes */}
+              <Route path="/discount-packages">
+                <Route index element={<DiscountPackageList />} />
+                <Route
+                    path="create"
+                    element={<DiscountPackageCreate />}
+                />
+                <Route
+                    path="edit/:id"
+                    element={<DiscountPackageEdit />}
+                />
+                <Route
+                    path="show/:id"
+                    element={<DiscountPackageShow />}
+                />
+              </Route>
+
+              {/* Account Discount Package Routes */}
+              <Route path="/account-discount-packages">
+                <Route
+                    index
+                    element={<AccountDiscountPackageList />}
+                />
+                <Route
+                    path="assign"
+                    element={<AccountDiscountPackageAssign />}
+                />
+                <Route
+                    path="edit/:id"
+                    element={<AccountDiscountPackageEdit />}
+                />
+                <Route
+                    path="show/:id"
+                    element={<AccountDiscountPackageShow />}
+                />
+              </Route>
+
+              {/* P2P Journey Routes */}
+              <Route path="/p2p-journeys">
+                <Route index element={<P2PJourneyList />} />
+                <Route path="create" element={<P2PJourneyCreate />} />
+                <Route path="edit/:id" element={<P2PJourneyEdit />} />
+                <Route path="show/:id" element={<P2PJourneyShow />} />
+              </Route>
+
+              {/* Timed Ticket Plan Routes */}
+              <Route path="/timed-ticket-plans">
+                <Route index element={<TimedTicketPlanList />} />
+                <Route
+                    path="create"
+                    element={<TimedTicketPlanCreate />}
+                />
+                <Route
+                    path="edit/:id"
+                    element={<TimedTicketPlanEdit />}
+                />
+                <Route
+                    path="show/:id"
+                    element={<TimedTicketPlanShow />}
+                />
+              </Route>
+
+              {/* Station Routes */}
+              <Route path="/stations">
+                <Route index element={<StationList />} />
+                <Route path="create" element={<StationCreate />} />
+                <Route path="edit/:id" element={<StationEdit />} />
+                <Route path="show/:id" element={<StationShow />} />
+              </Route>
+
+              {/* Metro Line Routes */}
+              <Route path="/metro-lines">
+                <Route index element={<MetroLineList />} />
+                <Route path="create" element={<MetroLineCreate />} />
+                <Route path="edit/:id" element={<MetroLineEdit />} />
+                <Route path="show/:id" element={<MetroLineShow />} />
+              </Route>
+
+              {/* Order Routes */}
+              <Route path="/orders">
+                <Route index element={<OrderList />} />
+                <Route path="create" element={<OrderCreate />} />
+                <Route
+                    path="edit/:orderNumber"
+                    element={<OrderEdit />}
+                />
+                <Route
+                    path="show/:orderNumber"
+                    element={<OrderShow />}
+                />
+              </Route>
+
+              <Route path="*" element={<ErrorComponent />} />
+            </Route>
+        )}
+      </Routes>
+      <RefineKbar />
+      <UnsavedChangesNotifier />
+      <DocumentTitleHandler />
+    </Refine>
+    <DevtoolsPanel />
+  </DevtoolsProvider>
+}
+
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -134,7 +483,6 @@ function App() {
 
   return (
     <BrowserRouter>
-      <GitHubBanner />
       <RefineKbarProvider>
         <ConfigProvider
           theme={{
@@ -145,337 +493,7 @@ function App() {
         >
           <AntdApp>
             <QueryClientProvider client={queryClient}>
-              <DevtoolsProvider>
-                <Refine
-                  authProvider={authProvider}
-                  routerProvider={routerBindings}
-                  notificationProvider={useNotificationProvider}
-                  resources={[
-                    {
-                      name: "dashboard",
-                      list: "/",
-                      meta: {
-                        label: "Dashboard",
-                        icon: <DashboardOutlined />,
-                      },
-                    },
-                    {
-                      name: "account",
-                      list: "/accounts",
-                      create: "/accounts/create",
-                      edit: "/accounts/edit/:id",
-                      show: "/accounts/show/:id",
-                      meta: {
-                        label: "Accounts",
-                        icon: <UserOutlined />,
-                        parent: "Account Management",
-                        canDelete: true,
-                      },
-                    },
-                    {
-                      name: "ticket",
-                      list: "/tickets",
-                      create: "/tickets/create",
-                      edit: "/tickets/edit/:id",
-                      show: "/tickets/show/:id",
-                      meta: {
-                        label: "Tickets",
-                        icon: <ContactsOutlined />,
-                        parent: "Ticket Management",
-                        canDelete: true,
-                      },
-                    },
-                    {
-                      name: "ticket-validation",
-                      list: "/ticket-validations",
-                      show: "/ticket-validations/show/:id",
-                      meta: {
-                        label: "Ticket Validations",
-                        icon: <CheckOutlined />,
-                        parent: "Ticket Management",
-                        canDelete: false,
-                      },
-                    },
-                    {
-                      name: "voucher",
-                      list: "/vouchers",
-                      create: "/vouchers/create",
-                      edit: "/vouchers/edit/:id",
-                      show: "/vouchers/show/:id",
-                      meta: {
-                        label: "Vouchers",
-                        icon: <TagOutlined />,
-                        parent: "Account Management",
-                        canDelete: true,
-                      },
-                    },
-                    {
-                      name: "staff",
-                      list: "/staff",
-                      meta: {
-                        label: "Staff",
-                        icon: <TeamOutlined />,
-                        parent: "Account Management",
-                      },
-                    },
-                    {
-                      name: "p2p-journey",
-                      list: "/p2p-journeys",
-                      create: "/p2p-journeys/create",
-                      edit: "/p2p-journeys/edit/:id",
-                      show: "/p2p-journeys/show/:id",
-                      meta: {
-                        label: "P2P Journeys",
-                        icon: <TagOutlined />,
-                        parent: "Ticket Management",
-                        canDelete: true,
-                      },
-                    },
-                    {
-                      name: "timed-ticket-plan",
-                      list: "/timed-ticket-plans",
-                      create: "/timed-ticket-plans/create",
-                      edit: "/timed-ticket-plans/edit/:id",
-                      show: "/timed-ticket-plans/show/:id",
-                      meta: {
-                        label: "Timed Ticket Plans",
-                        icon: <TagOutlined />,
-                        parent: "Ticket Management",
-                        canDelete: true,
-                      },
-                    },
-                    {
-                      name: "station",
-                      list: "/stations",
-                      create: "/stations/create",
-                      edit: "/stations/edit/:id",
-                      show: "/stations/show/:id",
-                      meta: {
-                        label: "Stations",
-                        icon: <EnvironmentOutlined />,
-                        parent: "Subway Management",
-                        canDelete: true,
-                      },
-                    },
-                    {
-                      name: "metro-line",
-                      list: "/metro-lines",
-                      create: "/metro-lines/create",
-                      edit: "/metro-lines/edit/:id",
-                      show: "/metro-lines/show/:id",
-                      meta: {
-                        label: "Metro Lines",
-                        icon: <MergeOutlined />,
-                        parent: "Subway Management",
-                        canDelete: true,
-                      },
-                    },
-                    {
-                      name: "orders",
-                      list: "/orders",
-                      create: "/orders/create",
-                      edit: "/orders/edit/:orderNumber",
-                      show: "/orders/show/:orderNumber",
-                      meta: {
-                        label: "Orders",
-                        icon: <ShoppingCartOutlined />,
-                        parent: "Order Management",
-                        canDelete: true,
-                      },
-                    },
-                    {
-                      name: "discount-packages",
-                      list: "/discount-packages",
-                      create: "/discount-packages/create",
-                      edit: "/discount-packages/edit/:id",
-                      show: "/discount-packages/show/:id",
-                      meta: {
-                        label: "Discount Packages",
-                        icon: <GiftOutlined />,
-                        parent: "Account Management",
-                        canDelete: true,
-                      },
-                    },
-                    {
-                      name: "account-discount-packages",
-                      list: "/account-discount-packages",
-                      create: "/account-discount-packages/assign",
-                      edit: "/account-discount-packages/edit/:id",
-                      show: "/account-discount-packages/show/:id",
-                      meta: {
-                        label: "Account Discount Packages",
-                        icon: <RetweetOutlined />,
-                        parent: "Account Management",
-                        canDelete: true,
-                      },
-                    },
-                  ]}
-                  options={{
-                    syncWithLocation: true,
-                    warnWhenUnsavedChanges: true,
-                    useNewQueryKeys: true,
-                    projectId: "BS4brD-dWcDtG-ry1qOK",
-                  }}
-                >
-                  <Routes>
-                    {/* Show login page if not authenticated */}
-                    {!isAuthenticated ? (
-                      <Route path="*" element={<FirebaseLoginPage />} />
-                    ) : (
-                      /* Show main app if authenticated */
-                      <Route
-                        element={
-                          <ThemedLayoutV2
-                            Sider={(props) => (
-                              <ThemedSiderV2 {...props} fixed />
-                            )}
-                          >
-                            <Outlet />
-                          </ThemedLayoutV2>
-                        }
-                      >
-                        <Route index element={<Dashboard />} />
-
-                        {/* Account Routes */}
-                        <Route path="/accounts">
-                          <Route index element={<AccountList />} />
-                          <Route path="create" element={<AccountCreate />} />
-                          <Route path="edit/:id" element={<AccountEdit />} />
-                          <Route path="show/:id" element={<AccountShow />} />
-                        </Route>
-
-                        {/* Ticket Routes */}
-                        <Route path="/tickets">
-                          <Route index element={<TicketList />} />
-                          <Route path="create" element={<TicketCreate />} />
-                          <Route path="edit/:id" element={<TicketEdit />} />
-                          <Route path="show/:id" element={<TicketShow />} />
-                        </Route>
-
-                        {/* Ticket Validation Routes */}
-                        <Route path="/ticket-validations">
-                          <Route index element={<TicketValidationList />} />
-                          <Route
-                            path="show/:id"
-                            element={<TicketValidationShow />}
-                          />
-                        </Route>
-
-                        {/* Voucher Routes */}
-                        <Route path="/vouchers">
-                          <Route index element={<VoucherList />} />
-                          <Route path="create" element={<VoucherCreate />} />
-                          <Route path="edit/:id" element={<VoucherEdit />} />
-                          <Route path="show/:id" element={<VoucherShow />} />
-                        </Route>
-
-                        {/* Staff Routes */}
-                        <Route path="/staff">
-                          <Route index element={<StaffList />} />
-                        </Route>
-
-                        {/* Discount Package Routes */}
-                        <Route path="/discount-packages">
-                          <Route index element={<DiscountPackageList />} />
-                          <Route
-                            path="create"
-                            element={<DiscountPackageCreate />}
-                          />
-                          <Route
-                            path="edit/:id"
-                            element={<DiscountPackageEdit />}
-                          />
-                          <Route
-                            path="show/:id"
-                            element={<DiscountPackageShow />}
-                          />
-                        </Route>
-
-                        {/* Account Discount Package Routes */}
-                        <Route path="/account-discount-packages">
-                          <Route
-                            index
-                            element={<AccountDiscountPackageList />}
-                          />
-                          <Route
-                            path="assign"
-                            element={<AccountDiscountPackageAssign />}
-                          />
-                          <Route
-                            path="edit/:id"
-                            element={<AccountDiscountPackageEdit />}
-                          />
-                          <Route
-                            path="show/:id"
-                            element={<AccountDiscountPackageShow />}
-                          />
-                        </Route>
-
-                        {/* P2P Journey Routes */}
-                        <Route path="/p2p-journeys">
-                          <Route index element={<P2PJourneyList />} />
-                          <Route path="create" element={<P2PJourneyCreate />} />
-                          <Route path="edit/:id" element={<P2PJourneyEdit />} />
-                          <Route path="show/:id" element={<P2PJourneyShow />} />
-                        </Route>
-
-                        {/* Timed Ticket Plan Routes */}
-                        <Route path="/timed-ticket-plans">
-                          <Route index element={<TimedTicketPlanList />} />
-                          <Route
-                            path="create"
-                            element={<TimedTicketPlanCreate />}
-                          />
-                          <Route
-                            path="edit/:id"
-                            element={<TimedTicketPlanEdit />}
-                          />
-                          <Route
-                            path="show/:id"
-                            element={<TimedTicketPlanShow />}
-                          />
-                        </Route>
-
-                        {/* Station Routes */}
-                        <Route path="/stations">
-                          <Route index element={<StationList />} />
-                          <Route path="create" element={<StationCreate />} />
-                          <Route path="edit/:id" element={<StationEdit />} />
-                          <Route path="show/:id" element={<StationShow />} />
-                        </Route>
-
-                        {/* Metro Line Routes */}
-                        <Route path="/metro-lines">
-                          <Route index element={<MetroLineList />} />
-                          <Route path="create" element={<MetroLineCreate />} />
-                          <Route path="edit/:id" element={<MetroLineEdit />} />
-                          <Route path="show/:id" element={<MetroLineShow />} />
-                        </Route>
-
-                        {/* Order Routes */}
-                        <Route path="/orders">
-                          <Route index element={<OrderList />} />
-                          <Route path="create" element={<OrderCreate />} />
-                          <Route
-                            path="edit/:orderNumber"
-                            element={<OrderEdit />}
-                          />
-                          <Route
-                            path="show/:orderNumber"
-                            element={<OrderShow />}
-                          />
-                        </Route>
-
-                        <Route path="*" element={<ErrorComponent />} />
-                      </Route>
-                    )}
-                  </Routes>
-                  <RefineKbar />
-                  <UnsavedChangesNotifier />
-                  <DocumentTitleHandler />
-                </Refine>
-                <DevtoolsPanel />
-              </DevtoolsProvider>
+              <InnerApp isAuthenticated={isAuthenticated} />
             </QueryClientProvider>
           </AntdApp>
         </ConfigProvider>
