@@ -5,6 +5,7 @@ import {
   MetroLineRequest,
   MetroLineFilter,
   PageableDto,
+  SortDirection,
 } from "../data/interfaces";
 import { subwayService } from "../data/services";
 
@@ -12,19 +13,20 @@ import { subwayService } from "../data/services";
 const QUERY_KEYS = {
   metroLines: ["metroLines"] as const,
   metroLine: (code: string) => ["metroLines", code] as const,
-  metroLinesPage: (page: number, size: number, filters?: MetroLineFilter) =>
-    ["metroLines", "page", page, size, filters] as const,
+  metroLinesPage: (page: number, size: number, sort?: Record<string, SortDirection>, filters?: MetroLineFilter) =>
+    ["metroLines", "page", page, size, sort, filters] as const,
 };
 
 // Get paginated metro lines
 export const useMetroLines = (
   page: number = 0,
   size: number = 10,
+  sort: Record<string, SortDirection> = {},
   filters?: MetroLineFilter
 ) => {
   return useQuery({
-    queryKey: QUERY_KEYS.metroLinesPage(page, size, filters),
-    queryFn: () => subwayService.getMetroLines({ page, size }, filters),
+    queryKey: QUERY_KEYS.metroLinesPage(page, size, sort, filters),
+    queryFn: () => subwayService.getMetroLines({ page, size, sort }, filters),
   });
 };
 

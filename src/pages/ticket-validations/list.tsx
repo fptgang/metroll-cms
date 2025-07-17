@@ -14,6 +14,7 @@ import {
   Typography,
   Pagination,
 } from "antd";
+import type { SortOrder } from "antd/es/table/interface";
 import {
   SearchOutlined,
   ReloadOutlined,
@@ -25,6 +26,7 @@ import {
   TicketValidationDto,
   ValidationType,
   TicketValidationFilter,
+  SortDirection,
 } from "../../data/interfaces";
 import {
   useTicketValidations,
@@ -47,6 +49,9 @@ export const TicketValidationList: React.FC = () => {
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(
     null
   );
+  const [sort, setSort] = useState<Record<string, SortDirection>>({
+    validationTime: SortDirection.DESC
+  });
 
   // Fetch stations for selector
   const { data: stationsData } = useStations(0, 100); // Get stations for dropdown
@@ -71,12 +76,13 @@ export const TicketValidationList: React.FC = () => {
   // Conditional hook usage based on search and station selection
   const shouldUseStationSearch = Boolean(stationCode);
 
-  const generalQuery = useTicketValidations(page, size, generalFilters);
+  const generalQuery = useTicketValidations(page, size, sort, generalFilters);
 
   const stationQuery = useTicketValidationsByStation(
     stationCode || "dummy", // Provide dummy value when not needed
     page,
     size,
+    sort,
     stationFilters,
     shouldUseStationSearch
   );
@@ -96,6 +102,44 @@ export const TicketValidationList: React.FC = () => {
     setValidationType(undefined);
     setDateRange(null);
     setPage(0);
+  };
+
+  // Handle table changes including sorting
+  const handleTableChange = (pagination: any, filters: any, sorter: any) => {
+    const newSort: Record<string, SortDirection> = {};
+    
+    // Helper function to convert field to consistent string format
+    const getFieldKey = (field: string | string[]) => {
+      if (Array.isArray(field)) {
+        return field.join('.');
+      }
+      return field;
+    };
+    
+    // Handle multiple column sorting
+    if (Array.isArray(sorter)) {
+      sorter.forEach((s) => {
+        if (s.field && s.order) {
+          const fieldKey = getFieldKey(s.field);
+          newSort[fieldKey] = s.order === 'ascend' ? SortDirection.ASC : SortDirection.DESC;
+        }
+      });
+    } else if (sorter.field && sorter.order) {
+      // Handle single column sorting
+      const fieldKey = getFieldKey(sorter.field);
+      newSort[fieldKey] = sorter.order === 'ascend' ? SortDirection.ASC : SortDirection.DESC;
+    }
+    
+    setSort(Object.keys(newSort).length > 0 ? newSort : { validationTime: SortDirection.DESC });
+  };
+
+  // Convert sort state to antd sorter format for controlled sorting
+  const getSorterProps = (field: string) => {
+    const sortDirection = sort?.[field];
+    return {
+      sorter: true,
+      sortOrder: sortDirection ? (sortDirection === SortDirection.ASC ? 'ascend' : 'descend') as SortOrder : undefined,
+    };
   };
 
   const getValidationTypeIcon = (type: ValidationType) => {
@@ -206,6 +250,7 @@ export const TicketValidationList: React.FC = () => {
           rowKey="id"
           loading={isLoading}
           pagination={false}
+          onChange={handleTableChange}
           scroll={{ x: 1000 }}
           size="small"
         >
@@ -217,9 +262,10 @@ export const TicketValidationList: React.FC = () => {
                 copyable
                 style={{ fontFamily: "monospace", fontSize: "12px" }}
               >
-                {value.substring(0, 8)}...
+                {value.substring(0, 20)}...
               </Text>
             )}
+            {...getSorterProps('ticketId')}
           />
           <Table.Column
             dataIndex="validationType"
@@ -233,6 +279,7 @@ export const TicketValidationList: React.FC = () => {
                 {type}
               </Tag>
             )}
+            {...getSorterProps('validationType')}
           />
           <Table.Column
             dataIndex="stationId"
@@ -242,6 +289,7 @@ export const TicketValidationList: React.FC = () => {
                 {value}
               </Text>
             )}
+            {...getSorterProps('stationId')}
           />
           <Table.Column
             dataIndex={["validator", "fullName"]}
@@ -251,6 +299,7 @@ export const TicketValidationList: React.FC = () => {
                 {value}
               </Text>
             )}
+            {...getSorterProps('validator.fullName')}
           />
           <Table.Column
             dataIndex="validationTime"
@@ -259,6 +308,7 @@ export const TicketValidationList: React.FC = () => {
             render={(value: string) => (
               <span style={{ fontSize: "12px" }}>{formatDate(value)}</span>
             )}
+            {...getSorterProps('validationTime')}
           />
           <Table.Column
             dataIndex="createdAt"
@@ -267,6 +317,7 @@ export const TicketValidationList: React.FC = () => {
             render={(value: string) => (
               <span style={{ fontSize: "12px" }}>{formatDate(value)}</span>
             )}
+            {...getSorterProps('createdAt')}
           />
           <Table.Column
             title="Actions"

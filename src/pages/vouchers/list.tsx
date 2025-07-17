@@ -1,6 +1,6 @@
 import React, {useState} from "react";
 import {CreateButton, EditButton, ShowButton,} from "@refinedev/antd";
-import {Button, Card, Pagination, Space, Table, Tag} from "antd";
+import {Button, Card, Pagination, Popconfirm, Space, Table, Tag} from "antd";
 import type { SortOrder } from "antd/es/table/interface";
 import {DeleteOutlined, DollarOutlined,} from "@ant-design/icons";
 import {SortDirection, VoucherDto, VoucherStatus} from "../../data";
@@ -166,12 +166,19 @@ export const VoucherList: React.FC = () => {
                 <ShowButton hideText size="small" recordItemId={record.id} />
                 {((perm.data === "ADMIN" || perm.data === "STAFF") && record.status == VoucherStatus.VALID) && <>
                   <EditButton hideText size="small" recordItemId={record.id} />
-                  <Button
-                      danger
-                      icon={<DeleteOutlined />}
-                      size="small"
-                      onClick={() => handleDelete(record.id)}
-                  />
+                  <Popconfirm
+                    title="Delete voucher"
+                    description="Are you sure?"
+                    onConfirm={() => handleDelete(record.id)}
+                    okText="Yes"
+                    cancelText="No"
+                  >
+                    <Button
+                        danger
+                        icon={<DeleteOutlined />}
+                        size="small"
+                    />
+                  </Popconfirm>
                 </>}
               </Space>
             )}

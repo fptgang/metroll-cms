@@ -15,6 +15,7 @@ import {
   PageableDto,
   SortDirection,
   OrderDashboard,
+  CheckoutRequest,
 } from "../interfaces";
 
 export class OrderService extends BaseService {
@@ -179,6 +180,13 @@ export class OrderService extends BaseService {
    */
   async getOrderDashboard(): Promise<OrderDashboard> {
     return this.get<OrderDashboard>(`${this.orderPath}/dashboard`);
+  }
+
+  /**
+   * Checkout - Create order and process payment (Staff offline tool)
+   */
+  async checkout(checkoutRequest: CheckoutRequest): Promise<OrderDto> {
+    return this.post<OrderDto>(`${this.orderPath}/checkout`, checkoutRequest);
   }
 }
 

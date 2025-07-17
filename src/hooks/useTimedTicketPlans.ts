@@ -5,6 +5,7 @@ import {
   TimedTicketPlanCreateRequest,
   TimedTicketPlanUpdateRequest,
   PageableDto,
+  SortDirection,
 } from "../data/interfaces";
 import { ticketService } from "../data/services";
 
@@ -15,19 +16,21 @@ const QUERY_KEYS = {
   timedTicketPlansPage: (
     page: number,
     size: number,
+    sort?: Record<string, SortDirection>,
     filters?: Record<string, any>
-  ) => ["timedTicketPlans", "page", page, size, filters] as const,
+  ) => ["timedTicketPlans", "page", page, size, sort, filters] as const,
 };
 
 // Get paginated timed ticket plans
 export const useTimedTicketPlans = (
   page: number = 0,
   size: number = 10,
+  sort: Record<string, SortDirection> = {},
   filters?: Record<string, any>
 ) => {
   return useQuery({
-    queryKey: QUERY_KEYS.timedTicketPlansPage(page, size, filters),
-    queryFn: () => ticketService.getTimedTicketPlans({ page, size }, filters),
+    queryKey: QUERY_KEYS.timedTicketPlansPage(page, size, sort, filters),
+    queryFn: () => ticketService.getTimedTicketPlans({ page, size, sort }, filters),
   });
 };
 

@@ -23,10 +23,12 @@ import {
 import { StationStatus } from "../../data/interfaces";
 import { useStation } from "../../hooks";
 import { formatDate } from "../../utils/formatDate";
+import { usePermissions } from "@refinedev/core";
 
 export const StationShow: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
+  const perm = usePermissions();
 
   const { data: station, isLoading, error } = useStation(id || "");
 
@@ -96,14 +98,16 @@ export const StationShow: React.FC = () => {
         }
         extra={
           <Space>
-            <Button
-              icon={<EditOutlined />}
-              onClick={handleEdit}
-              type="primary"
-              className="bg-green-600 hover:bg-green-700"
-            >
+            {perm.data == "ADMIN" &&
+              <Button
+                icon={<EditOutlined />}
+                onClick={handleEdit}
+                type="primary"
+                className="bg-green-600 hover:bg-green-700"
+              >
               Edit Station
             </Button>
+            }
             <Button icon={<ArrowLeftOutlined />} onClick={handleBack}>
               Back to Stations
             </Button>
@@ -251,14 +255,14 @@ export const StationShow: React.FC = () => {
           {/* Quick Actions */}
           <Card title="Quick Actions" size="small">
             <Space wrap>
-              <Button
+              {perm.data == "ADMIN" && <Button
                 icon={<EditOutlined />}
                 onClick={handleEdit}
                 type="primary"
                 className="bg-green-600 hover:bg-green-700"
               >
                 Edit Station
-              </Button>
+              </Button>}
               <Button
                 icon={<GlobalOutlined />}
                 onClick={() =>

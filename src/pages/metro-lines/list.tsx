@@ -12,6 +12,7 @@ import {
   Tooltip,
   Progress,
 } from "antd";
+import type { SortOrder } from "antd/es/table/interface";
 import {
   SearchOutlined,
   NodeIndexOutlined,
@@ -26,9 +27,11 @@ import {
   MetroLineDto,
   LineStatus,
   MetroLineFilter,
+  SortDirection,
 } from "../../data/interfaces";
 import { useMetroLines } from "../../hooks";
 import { formatDate } from "../../utils/formatDate";
+import { usePermissions } from "@refinedev/core";
 
 const { Option } = Select;
 
@@ -36,8 +39,12 @@ export const MetroLineList: React.FC = () => {
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
   const [filters, setFilters] = useState<MetroLineFilter>({});
+  const [sort, setSort] = useState<Record<string, SortDirection>>({
+    createdAt: SortDirection.DESC
+  });
+  const perm = usePermissions();
 
-  const { data, isLoading, error } = useMetroLines(page, size, filters);
+  const { data, isLoading, error } = useMetroLines(page, size, sort, filters);
 
   const handleSearch = (value: string) => {
     setFilters({ ...filters, name: value });
@@ -47,6 +54,34 @@ export const MetroLineList: React.FC = () => {
   const handleStatusFilter = (status: LineStatus | undefined) => {
     setFilters({ ...filters, status });
     setPage(0);
+  };
+
+  // Handle table changes including sorting
+  const handleTableChange = (pagination: any, filters: any, sorter: any) => {
+    const newSort: Record<string, SortDirection> = {};
+    
+    // Handle multiple column sorting
+    if (Array.isArray(sorter)) {
+      sorter.forEach((s) => {
+        if (s.field && s.order) {
+          newSort[s.field] = s.order === 'ascend' ? SortDirection.ASC : SortDirection.DESC;
+        }
+      });
+    } else if (sorter.field && sorter.order) {
+      // Handle single column sorting
+      newSort[sorter.field] = sorter.order === 'ascend' ? SortDirection.ASC : SortDirection.DESC;
+    }
+    
+    setSort(Object.keys(newSort).length > 0 ? newSort : { createdAt: SortDirection.DESC });
+  };
+
+  // Convert sort state to antd sorter format for controlled sorting
+  const getSorterProps = (field: string) => {
+    const sortDirection = sort?.[field];
+    return {
+      sorter: true,
+      sortOrder: sortDirection ? (sortDirection === SortDirection.ASC ? 'ascend' : 'descend') as SortOrder : undefined,
+    };
   };
 
   const metroLines = data?.content || [];
@@ -84,21 +119,37 @@ export const MetroLineList: React.FC = () => {
 
   const columns = [
     {
-      title: "Line",
-      key: "line",
-      width: 150,
-      render: (_: any, record: MetroLineDto) => (
+      title: "Code",
+      dataIndex: "code",
+      key: "code",
+      width: 100,
+      render: (code: string) => (
+        <span className="font-mono font-bold text-blue-600">{code}</span>
+      ),
+      ...getSorterProps('code'),
+    },
+    {
+      title: "Name",
+      dataIndex: "name",
+      key: "name",
+      render: (name: string) => <span className="font-medium">{name}</span>,
+      ...getSorterProps('name'),
+    },
+    {
+      title: "Color",
+      dataIndex: "color",
+      key: "color",
+      width: 80,
+      render: (color: string) => (
         <div className="flex items-center gap-2">
           <div
-            className="w-4 h-4 rounded-full border-2 border-white shadow-sm"
-            style={{ backgroundColor: record.color }}
+            className="w-4 h-4 rounded-full border"
+            style={{ backgroundColor: color }}
           />
-          <div>
-            <div className="font-mono font-semibold text-sm">{record.code}</div>
-            <div className="text-xs text-gray-500">{record.name}</div>
-          </div>
+          <span className="font-mono text-xs">{color}</span>
         </div>
       ),
+      ...getSorterProps('color'),
     },
     {
       title: "Status",
@@ -110,66 +161,7 @@ export const MetroLineList: React.FC = () => {
           {status.replace("_", " ")}
         </Tag>
       ),
-    },
-    {
-      title: "Operating Hours",
-      dataIndex: "operatingHours",
-      key: "operatingHours",
-      width: 150,
-      render: (hours: string) => (
-        <span className="font-mono text-sm">{hours}</span>
-      ),
-    },
-    {
-      title: "Segments",
-      dataIndex: "segments",
-      key: "segments",
-      width: 120,
-      render: (segments: any[]) => (
-        <div className="text-center">
-          <div className="text-lg font-semibold text-blue-600">
-            {segments.length}
-          </div>
-          <div className="text-xs text-gray-500">segments</div>
-        </div>
-      ),
-    },
-    {
-      title: "Stations",
-      key: "stations",
-      width: 120,
-      render: (_: any, record: MetroLineDto) => {
-        const stationCount = new Set(
-          record.segments.flatMap((s) => [s.startStationCode, s.endStationCode])
-        ).size;
-        return (
-          <div className="text-center">
-            <div className="text-lg font-semibold text-green-600">
-              {stationCount}
-            </div>
-            <div className="text-xs text-gray-500">stations</div>
-          </div>
-        );
-      },
-    },
-    {
-      title: "Total Distance",
-      key: "distance",
-      width: 120,
-      render: (_: any, record: MetroLineDto) => {
-        const totalDistance = record.segments.reduce(
-          (sum, s) => sum + s.distance,
-          0
-        );
-        return (
-          <div className="text-center">
-            <div className="text-lg font-semibold text-purple-600">
-              {totalDistance.toFixed(1)}
-            </div>
-            <div className="text-xs text-gray-500">km</div>
-          </div>
-        );
-      },
+      ...getSorterProps('status'),
     },
     {
       title: "Created",
@@ -179,6 +171,7 @@ export const MetroLineList: React.FC = () => {
       render: (date: string) => (
         <span className="text-xs text-gray-500">{formatDate(date)}</span>
       ),
+      ...getSorterProps('createdAt'),
     },
     {
       title: "Actions",
@@ -192,12 +185,12 @@ export const MetroLineList: React.FC = () => {
             recordItemId={record.code}
             className="text-blue-600"
           />
-          <EditButton
+          {perm.data == "ADMIN" && <EditButton
             hideText
             size="small"
             recordItemId={record.code}
             className="text-green-600"
-          />
+          />}
         </Space>
       ),
     },
@@ -212,7 +205,7 @@ export const MetroLineList: React.FC = () => {
             <span className="text-xl font-semibold">Metro Lines</span>
           </div>
         }
-        extra={<CreateButton icon={<PlusOutlined />} />}
+        extra={perm.data == "ADMIN" && <CreateButton />}
         className="shadow-sm"
       >
         <Space direction="vertical" size="middle" className="w-full">
@@ -231,7 +224,6 @@ export const MetroLineList: React.FC = () => {
               allowClear
               className="min-w-40"
               onChange={handleStatusFilter}
-              defaultValue={LineStatus.OPERATIONAL}
             >
               <Option value={LineStatus.OPERATIONAL}>
                 <Tag color="green">Operational</Tag>
@@ -265,10 +257,7 @@ export const MetroLineList: React.FC = () => {
             </div>
             <div className="bg-blue-50 p-4 rounded-lg">
               <div className="text-2xl font-bold text-blue-600">
-                {
-                  metroLines.filter((l) => l.status === LineStatus.PLANNED)
-                    .length
-                }
+                {metroLines.filter((l) => l.status === LineStatus.PLANNED).length}
               </div>
               <div className="text-sm text-blue-600">Planned</div>
             </div>
@@ -280,88 +269,10 @@ export const MetroLineList: React.FC = () => {
                   ).length
                 }
               </div>
-              <div className="text-sm text-orange-600">Under Maintenance</div>
+              <div className="text-sm text-orange-600">Maintenance</div>
             </div>
           </div>
 
-          {/* Network Overview */}
-          {metroLines.length > 0 && (
-            <Card title="Network Overview" size="small">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-blue-600">
-                    {metroLines.reduce(
-                      (sum, line) => sum + line.segments.length,
-                      0
-                    )}
-                  </div>
-                  <div className="text-sm text-gray-600">Total Segments</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-green-600">
-                    {
-                      new Set(
-                        metroLines.flatMap((line) =>
-                          line.segments.flatMap((s) => [
-                            s.startStationCode,
-                            s.endStationCode,
-                          ])
-                        )
-                      ).size
-                    }
-                  </div>
-                  <div className="text-sm text-gray-600">Unique Stations</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-purple-600">
-                    {metroLines
-                      .reduce(
-                        (sum, line) =>
-                          sum +
-                          line.segments.reduce(
-                            (lineSum, segment) => lineSum + segment.distance,
-                            0
-                          ),
-                        0
-                      )
-                      .toFixed(1)}
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    Total Network Distance (km)
-                  </div>
-                </div>
-              </div>
-            </Card>
-          )}
-
-          {/* Lines Preview */}
-          {metroLines.length > 0 && (
-            <Card title="Lines Preview" size="small">
-              <div className="space-y-2">
-                {metroLines.slice(0, 5).map((line) => (
-                  <div
-                    key={line.id}
-                    className="flex items-center gap-3 p-2 bg-gray-50 rounded"
-                  >
-                    <div
-                      className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: line.color }}
-                    />
-                    <span className="font-mono font-semibold min-w-16">
-                      {line.code}
-                    </span>
-                    <span className="flex-1">{line.name}</span>
-                    <Tag color={getStatusColor(line.status)}>{line.status}</Tag>
-                  </div>
-                ))}
-                {metroLines.length > 5 && (
-                  <div className="text-center text-sm text-gray-500 py-2">
-                    ... and {metroLines.length - 5} more lines
-                  </div>
-                )}
-              </div>
-            </Card>
-          )}
 
           {/* Table */}
           <Table
@@ -370,6 +281,7 @@ export const MetroLineList: React.FC = () => {
             rowKey="id"
             loading={isLoading}
             pagination={false}
+            onChange={handleTableChange}
             className="bg-white rounded-lg shadow-sm"
             size="middle"
             scroll={{ x: 1000 }}

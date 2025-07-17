@@ -15,6 +15,7 @@ import {
   Button,
   Pagination,
   Tooltip,
+  Popconfirm,
 } from "antd";
 import type { SortOrder } from "antd/es/table/interface";
 import {
@@ -190,18 +191,26 @@ export const AccountList: React.FC = () => {
             render={(_, record: AccountDto) => (
               <Space>
                 <ShowButton hideText size="small" recordItemId={record.id} />
-                <EditButton hideText size="small" recordItemId={record.id} />
+                {record.active && <EditButton hideText size="small" recordItemId={record.id} />}
                 {
-                  perm.data === "ADMIN" &&
-                    <Button
-                        size="small"
-                        icon={
-                          record.active ? <CheckCircleOutlined /> : <DeleteOutlined />
-                        }
-                        danger={!record.active}
-                        type="primary"
-                        onClick={() => handleDelete(record.id)}
-                    />
+                  (perm.data === "ADMIN" && record.active) && 
+                    <Popconfirm
+                      title="Delete account"
+                      description="Are you sure?"
+                      onConfirm={() => handleDelete(record.id)}
+                      okText="Yes"
+                      cancelText="No"
+                    >
+                      <Tooltip title="Delete Account">
+                        <Button
+                          type="text"
+                          size="small"
+                          danger
+                          loading={deleteMutation.isPending}
+                          icon={<DeleteOutlined />}
+                        />
+                      </Tooltip>
+                    </Popconfirm>
                 }
               </Space>
             )}

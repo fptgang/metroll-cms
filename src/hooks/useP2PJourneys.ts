@@ -5,6 +5,7 @@ import {
   P2PJourneyCreateRequest,
   P2PJourneyUpdateRequest,
   PageableDto,
+  SortDirection,
 } from "../data/interfaces";
 import { ticketService } from "../data/services";
 
@@ -15,8 +16,9 @@ const QUERY_KEYS = {
   p2pJourneysPage: (
     page: number,
     size: number,
+    sort?: Record<string, SortDirection>,
     filters?: Record<string, any>
-  ) => ["p2pJourneys", "page", page, size, filters] as const,
+  ) => ["p2pJourneys", "page", page, size, sort, filters] as const,
   p2pJourneyByStations: (startStationId: string, endStationId: string) =>
     ["p2pJourneys", "stations", startStationId, endStationId] as const,
 };
@@ -25,11 +27,12 @@ const QUERY_KEYS = {
 export const useP2PJourneys = (
   page: number = 0,
   size: number = 10,
+  sort: Record<string, SortDirection> = {},
   filters?: Record<string, any>
 ) => {
   return useQuery({
-    queryKey: QUERY_KEYS.p2pJourneysPage(page, size, filters),
-    queryFn: () => ticketService.getP2PJourneys({ page, size }, filters),
+    queryKey: QUERY_KEYS.p2pJourneysPage(page, size, sort, filters),
+    queryFn: () => ticketService.getP2PJourneys({ page, size, sort }, filters),
   });
 };
 
@@ -54,6 +57,8 @@ export const useP2PJourneyByStations = (
     enabled: !!startStationId && !!endStationId,
   });
 };
+
+
 
 // Create P2P journey mutation
 export const useCreateP2PJourney = () => {

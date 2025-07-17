@@ -11,11 +11,12 @@ import {
 import { LineStatus } from "../../data/interfaces";
 import { useMetroLine } from "../../hooks";
 import { MetroLineMap } from "../../components/map";
+import { usePermissions } from "@refinedev/core";
 
 export const MetroLineShow: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-
+  const perm = usePermissions();
   const { data: metroLine, isLoading, error } = useMetroLine(id || "");
 
   const handleBack = () => {
@@ -58,6 +59,7 @@ export const MetroLineShow: React.FC = () => {
         }
         extra={
           <Space>
+            {perm.data == "ADMIN" &&
             <Button
               icon={<EditOutlined />}
               onClick={handleEdit}
@@ -65,7 +67,7 @@ export const MetroLineShow: React.FC = () => {
               className="bg-green-600 hover:bg-green-700"
             >
               Edit Line
-            </Button>
+            </Button>}
             <Button icon={<ArrowLeftOutlined />} onClick={handleBack}>
               Back to Metro Lines
             </Button>

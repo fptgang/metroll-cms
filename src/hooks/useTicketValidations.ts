@@ -5,6 +5,7 @@ import {
   TicketValidationCreateRequest,
   TicketValidationFilter,
   PageableDto,
+  SortDirection,
 } from "../data/interfaces";
 import { ticketService } from "../data/services";
 
@@ -15,14 +16,16 @@ const QUERY_KEYS = {
   validationsPage: (
     page: number,
     size: number,
+    sort?: Record<string, SortDirection>,
     filters?: TicketValidationFilter
-  ) => ["ticket-validations", "page", page, size, filters] as const,
+  ) => ["ticket-validations", "page", page, size, sort, filters] as const,
   validationsByTicket: (ticketId: string) =>
     ["ticket-validations", "ticket", ticketId] as const,
   validationsByStation: (
     stationCode: string,
     page: number,
     size: number,
+    sort?: Record<string, SortDirection>,
     filters?: any
   ) =>
     [
@@ -31,6 +34,7 @@ const QUERY_KEYS = {
       stationCode,
       page,
       size,
+      sort,
       filters,
     ] as const,
 };
@@ -39,11 +43,12 @@ const QUERY_KEYS = {
 export const useTicketValidations = (
   page: number = 0,
   size: number = 10,
+  sort: Record<string, SortDirection> = {},
   filters?: TicketValidationFilter
 ) => {
   return useQuery({
-    queryKey: QUERY_KEYS.validationsPage(page, size, filters),
-    queryFn: () => ticketService.getTicketValidations({ page, size }, filters),
+    queryKey: QUERY_KEYS.validationsPage(page, size, sort, filters),
+    queryFn: () => ticketService.getTicketValidations({ page, size, sort }, filters),
   });
 };
 
@@ -68,23 +73,19 @@ export const useTicketValidationsByTicket = (
   });
 };
 
-// Get ticket validations by station code (paginated)
+// Get ticket validations by station
 export const useTicketValidationsByStation = (
   stationCode: string,
   page: number = 0,
   size: number = 10,
-  filters?: Pick<TicketValidationFilter, "search" | "startDate" | "endDate">,
+  sort: Record<string, SortDirection> = {},
+  filters?: any,
   enabled = true
 ) => {
   return useQuery({
-    queryKey: QUERY_KEYS.validationsByStation(stationCode, page, size, filters),
-    queryFn: () =>
-      ticketService.getTicketValidationsByStationCode(
-        stationCode,
-        { page, size },
-        filters
-      ),
-    enabled,
+    queryKey: QUERY_KEYS.validationsByStation(stationCode, page, size, sort, filters),
+    queryFn: () => ticketService.getTicketValidationsByStationCode(stationCode, { page, size, sort }, filters),
+    enabled: enabled && !!stationCode,
   });
 };
 

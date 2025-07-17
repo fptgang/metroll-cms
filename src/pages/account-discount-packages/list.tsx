@@ -10,9 +10,10 @@ import {
   Pagination,
   Select,
   Tooltip,
+  Popconfirm,
 } from "antd";
 import type { SortOrder } from "antd/es/table/interface";
-import { SearchOutlined, UserOutlined, GiftOutlined } from "@ant-design/icons";
+import { SearchOutlined, UserOutlined, GiftOutlined, DeleteOutlined } from "@ant-design/icons";
 import {AccountDiscountPackageDto, SortDirection, DiscountPackageDto} from "../../data/interfaces";
 import {
   useAccountDiscountPackages,
@@ -206,17 +207,23 @@ export const AccountDiscountPackageList: React.FC = () => {
               <Space>
                 <ShowButton hideText size="small" recordItemId={record.id} />
                 {record.status === "ACTIVATED" && (
-                  <Tooltip title="Unassign Package">
-                    <Button
-                      type="text"
-                      size="small"
-                      danger
-                      onClick={() => handleUnassign(record.id)}
-                      loading={unassignMutation.isPending}
-                    >
-                      <DeleteButton hideText size="small" />
-                    </Button>
-                  </Tooltip>
+                  <Popconfirm
+                    title="Unassign discount package"
+                    description="Are you sure?"
+                    onConfirm={() => handleUnassign(record.id)}
+                    okText="Yes"
+                    cancelText="No"
+                  >
+                    <Tooltip title="Unassign Package">
+                      <Button
+                        type="text"
+                        size="small"
+                        danger
+                        loading={unassignMutation.isPending}
+                        icon={<DeleteOutlined />}
+                      />
+                    </Tooltip>
+                  </Popconfirm>
                 )}
               </Space>
             )}

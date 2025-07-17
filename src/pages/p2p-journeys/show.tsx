@@ -10,6 +10,7 @@ import {
 import { useP2PJourney } from "../../hooks";
 import { useParams } from "react-router";
 import { formatDate } from "../../utils/formatDate";
+import { usePermissions } from "@refinedev/core";
 
 const { Title, Text } = Typography;
 
@@ -17,6 +18,8 @@ export const P2PJourneyShow: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { data: journey, isLoading } = useP2PJourney(id!);
 
+  const perm = usePermissions();
+  
   if (isLoading) {
     return (
       <Spin size="large" style={{ display: "block", margin: "20px auto" }} />
@@ -28,7 +31,7 @@ export const P2PJourneyShow: React.FC = () => {
   }
 
   return (
-    <Show>
+    <Show canDelete={perm.data == "ADMIN"} canEdit={perm.data == "ADMIN"}>
       <Card>
         <Row gutter={[16, 16]}>
           <Col span={24} style={{ textAlign: "center", marginBottom: 16 }}>
