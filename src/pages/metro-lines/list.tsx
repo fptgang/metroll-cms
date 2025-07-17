@@ -40,7 +40,7 @@ export const MetroLineList: React.FC = () => {
   const [size, setSize] = useState(10);
   const [filters, setFilters] = useState<MetroLineFilter>({});
   const [sort, setSort] = useState<Record<string, SortDirection>>({
-    createdAt: SortDirection.DESC
+    createdAt: SortDirection.DESC,
   });
   const perm = usePermissions();
 
@@ -59,20 +59,26 @@ export const MetroLineList: React.FC = () => {
   // Handle table changes including sorting
   const handleTableChange = (pagination: any, filters: any, sorter: any) => {
     const newSort: Record<string, SortDirection> = {};
-    
+
     // Handle multiple column sorting
     if (Array.isArray(sorter)) {
       sorter.forEach((s) => {
         if (s.field && s.order) {
-          newSort[s.field] = s.order === 'ascend' ? SortDirection.ASC : SortDirection.DESC;
+          newSort[s.field] =
+            s.order === "ascend" ? SortDirection.ASC : SortDirection.DESC;
         }
       });
     } else if (sorter.field && sorter.order) {
       // Handle single column sorting
-      newSort[sorter.field] = sorter.order === 'ascend' ? SortDirection.ASC : SortDirection.DESC;
+      newSort[sorter.field] =
+        sorter.order === "ascend" ? SortDirection.ASC : SortDirection.DESC;
     }
-    
-    setSort(Object.keys(newSort).length > 0 ? newSort : { createdAt: SortDirection.DESC });
+
+    setSort(
+      Object.keys(newSort).length > 0
+        ? newSort
+        : { createdAt: SortDirection.DESC }
+    );
   };
 
   // Convert sort state to antd sorter format for controlled sorting
@@ -80,7 +86,11 @@ export const MetroLineList: React.FC = () => {
     const sortDirection = sort?.[field];
     return {
       sorter: true,
-      sortOrder: sortDirection ? (sortDirection === SortDirection.ASC ? 'ascend' : 'descend') as SortOrder : undefined,
+      sortOrder: sortDirection
+        ? ((sortDirection === SortDirection.ASC
+            ? "ascend"
+            : "descend") as SortOrder)
+        : undefined,
     };
   };
 
@@ -126,14 +136,14 @@ export const MetroLineList: React.FC = () => {
       render: (code: string) => (
         <span className="font-mono font-bold text-blue-600">{code}</span>
       ),
-      ...getSorterProps('code'),
+      ...getSorterProps("code"),
     },
     {
       title: "Name",
       dataIndex: "name",
       key: "name",
       render: (name: string) => <span className="font-medium">{name}</span>,
-      ...getSorterProps('name'),
+      ...getSorterProps("name"),
     },
     {
       title: "Color",
@@ -149,7 +159,7 @@ export const MetroLineList: React.FC = () => {
           <span className="font-mono text-xs">{color}</span>
         </div>
       ),
-      ...getSorterProps('color'),
+      ...getSorterProps("color"),
     },
     {
       title: "Status",
@@ -161,7 +171,7 @@ export const MetroLineList: React.FC = () => {
           {status.replace("_", " ")}
         </Tag>
       ),
-      ...getSorterProps('status'),
+      ...getSorterProps("status"),
     },
     {
       title: "Created",
@@ -171,7 +181,7 @@ export const MetroLineList: React.FC = () => {
       render: (date: string) => (
         <span className="text-xs text-gray-500">{formatDate(date)}</span>
       ),
-      ...getSorterProps('createdAt'),
+      ...getSorterProps("createdAt"),
     },
     {
       title: "Actions",
@@ -185,12 +195,14 @@ export const MetroLineList: React.FC = () => {
             recordItemId={record.code}
             className="text-blue-600"
           />
-          {perm.data == "ADMIN" && <EditButton
-            hideText
-            size="small"
-            recordItemId={record.code}
-            className="text-green-600"
-          />}
+          {perm.data == "ADMIN" && (
+            <EditButton
+              hideText
+              size="small"
+              recordItemId={record.code}
+              className="text-green-600"
+            />
+          )}
         </Space>
       ),
     },
@@ -240,39 +252,84 @@ export const MetroLineList: React.FC = () => {
             </Select>
           </div>
 
-          {/* Summary Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">{total}</div>
-              <div className="text-sm text-blue-600">Total Lines</div>
-            </div>
-            <div className="bg-green-50 p-4 rounded-lg">
-              <div className="text-2xl font-bold text-green-600">
-                {
-                  metroLines.filter((l) => l.status === LineStatus.OPERATIONAL)
-                    .length
-                }
+          {/* Network Overview */}
+          {metroLines.length > 0 && (
+            <Card title="Network Overview" size="small">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-blue-600">
+                    {metroLines.reduce(
+                      (sum, line) => sum + line.segments.length,
+                      0
+                    )}
+                  </div>
+                  <div className="text-sm text-gray-600">Total Segments</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-green-600">
+                    {
+                      new Set(
+                        metroLines.flatMap((line) =>
+                          line.segments.flatMap((s) => [
+                            s.startStationCode,
+                            s.endStationCode,
+                          ])
+                        )
+                      ).size
+                    }
+                  </div>
+                  <div className="text-sm text-gray-600">Unique Stations</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-purple-600">
+                    {metroLines
+                      .reduce(
+                        (sum, line) =>
+                          sum +
+                          line.segments.reduce(
+                            (lineSum, segment) => lineSum + segment.distance,
+                            0
+                          ),
+                        0
+                      )
+                      .toFixed(1)}
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    Total Network Distance (km)
+                  </div>
+                </div>
               </div>
-              <div className="text-sm text-green-600">Operational</div>
-            </div>
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">
-                {metroLines.filter((l) => l.status === LineStatus.PLANNED).length}
-              </div>
-              <div className="text-sm text-blue-600">Planned</div>
-            </div>
-            <div className="bg-orange-50 p-4 rounded-lg">
-              <div className="text-2xl font-bold text-orange-600">
-                {
-                  metroLines.filter(
-                    (l) => l.status === LineStatus.UNDER_MAINTENANCE
-                  ).length
-                }
-              </div>
-              <div className="text-sm text-orange-600">Maintenance</div>
-            </div>
-          </div>
+            </Card>
+          )}
 
+          {/* Lines Preview */}
+          {metroLines.length > 0 && (
+            <Card title="Lines Preview" size="small">
+              <div className="space-y-2">
+                {metroLines.slice(0, 5).map((line) => (
+                  <div
+                    key={line.id}
+                    className="flex items-center gap-3 p-2 bg-gray-50 rounded"
+                  >
+                    <div
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: line.color }}
+                    />
+                    <span className="font-mono font-semibold min-w-16">
+                      {line.code}
+                    </span>
+                    <span className="flex-1">{line.name}</span>
+                    <Tag color={getStatusColor(line.status)}>{line.status}</Tag>
+                  </div>
+                ))}
+                {metroLines.length > 5 && (
+                  <div className="text-center text-sm text-gray-500 py-2">
+                    ... and {metroLines.length - 5} more lines
+                  </div>
+                )}
+              </div>
+            </Card>
+          )}
 
           {/* Table */}
           <Table

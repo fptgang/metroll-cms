@@ -27,7 +27,7 @@ import {
 } from "../../data/interfaces";
 import { useStations } from "../../hooks";
 import { formatDate } from "../../utils/formatDate";
-import {usePermissions} from "@refinedev/core";
+import { usePermissions } from "@refinedev/core";
 
 const { Option } = Select;
 
@@ -36,7 +36,7 @@ export const StationList: React.FC = () => {
   const [size, setSize] = useState(10);
   const [filters, setFilters] = useState<StationFilter>({});
   const [sort, setSort] = useState<Record<string, SortDirection>>({
-    createdAt: SortDirection.DESC
+    createdAt: SortDirection.DESC,
   });
   const perm = usePermissions();
 
@@ -60,20 +60,26 @@ export const StationList: React.FC = () => {
   // Handle table changes including sorting
   const handleTableChange = (pagination: any, filters: any, sorter: any) => {
     const newSort: Record<string, SortDirection> = {};
-    
+
     // Handle multiple column sorting
     if (Array.isArray(sorter)) {
       sorter.forEach((s) => {
         if (s.field && s.order) {
-          newSort[s.field] = s.order === 'ascend' ? SortDirection.ASC : SortDirection.DESC;
+          newSort[s.field] =
+            s.order === "ascend" ? SortDirection.ASC : SortDirection.DESC;
         }
       });
     } else if (sorter.field && sorter.order) {
       // Handle single column sorting
-      newSort[sorter.field] = sorter.order === 'ascend' ? SortDirection.ASC : SortDirection.DESC;
+      newSort[sorter.field] =
+        sorter.order === "ascend" ? SortDirection.ASC : SortDirection.DESC;
     }
-    
-    setSort(Object.keys(newSort).length > 0 ? newSort : { createdAt: SortDirection.DESC });
+
+    setSort(
+      Object.keys(newSort).length > 0
+        ? newSort
+        : { createdAt: SortDirection.DESC }
+    );
   };
 
   // Convert sort state to antd sorter format for controlled sorting
@@ -81,7 +87,11 @@ export const StationList: React.FC = () => {
     const sortDirection = sort?.[field];
     return {
       sorter: true,
-      sortOrder: sortDirection ? (sortDirection === SortDirection.ASC ? 'ascend' : 'descend') as SortOrder : undefined,
+      sortOrder: sortDirection
+        ? ((sortDirection === SortDirection.ASC
+            ? "ascend"
+            : "descend") as SortOrder)
+        : undefined,
     };
   };
 
@@ -123,14 +133,14 @@ export const StationList: React.FC = () => {
       render: (code: string) => (
         <span className="font-mono font-semibold">{code}</span>
       ),
-      ...getSorterProps('code'),
+      ...getSorterProps("code"),
     },
     {
       title: "Name",
       dataIndex: "name",
       key: "name",
       render: (name: string) => <span className="font-medium">{name}</span>,
-      ...getSorterProps('name'),
+      ...getSorterProps("name"),
     },
     {
       title: "Address",
@@ -142,7 +152,7 @@ export const StationList: React.FC = () => {
           <span className="text-gray-600">{address}</span>
         </Tooltip>
       ),
-      ...getSorterProps('address'),
+      ...getSorterProps("address"),
     },
     {
       title: "Status",
@@ -154,7 +164,7 @@ export const StationList: React.FC = () => {
           {status.replace("_", " ")}
         </Tag>
       ),
-      ...getSorterProps('status'),
+      ...getSorterProps("status"),
     },
     {
       title: "Metro Lines",
@@ -182,7 +192,7 @@ export const StationList: React.FC = () => {
       render: (date: string) => (
         <span className="text-xs text-gray-500">{formatDate(date)}</span>
       ),
-      ...getSorterProps('createdAt'),
+      ...getSorterProps("createdAt"),
     },
     {
       title: "Actions",
@@ -196,12 +206,14 @@ export const StationList: React.FC = () => {
             recordItemId={record.code}
             className="text-blue-600"
           />
-          {perm.data == "ADMIN" && <EditButton
-            hideText
-            size="small"
-            recordItemId={record.code}
-            className="text-green-600"
-          />}
+          {perm.data == "ADMIN" && (
+            <EditButton
+              hideText
+              size="small"
+              recordItemId={record.code}
+              className="text-green-600"
+            />
+          )}
         </Space>
       ),
     },
@@ -253,42 +265,6 @@ export const StationList: React.FC = () => {
               className="max-w-40"
               onChange={(e) => handleLineFilter(e.target.value || undefined)}
             />
-          </div>
-
-          {/* Summary Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">{total}</div>
-              <div className="text-sm text-blue-600">Total Stations</div>
-            </div>
-            <div className="bg-green-50 p-4 rounded-lg">
-              <div className="text-2xl font-bold text-green-600">
-                {
-                  stations.filter((s) => s.status === StationStatus.OPERATIONAL)
-                    .length
-                }
-              </div>
-              <div className="text-sm text-green-600">Operational</div>
-            </div>
-            <div className="bg-orange-50 p-4 rounded-lg">
-              <div className="text-2xl font-bold text-orange-600">
-                {
-                  stations.filter(
-                    (s) => s.status === StationStatus.UNDER_MAINTENANCE
-                  ).length
-                }
-              </div>
-              <div className="text-sm text-orange-600">Maintenance</div>
-            </div>
-            <div className="bg-red-50 p-4 rounded-lg">
-              <div className="text-2xl font-bold text-red-600">
-                {
-                  stations.filter((s) => s.status === StationStatus.CLOSED)
-                    .length
-                }
-              </div>
-              <div className="text-sm text-red-600">Closed</div>
-            </div>
           </div>
 
           {/* Table */}
