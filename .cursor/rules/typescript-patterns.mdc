@@ -1,7 +1,6 @@
 ---
-globs: "*.ts,*.tsx"
+alwaysApply: true
 ---
-
 # TypeScript Patterns for Metroll CMS
 
 ## Type Safety Requirements

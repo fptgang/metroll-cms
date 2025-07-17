@@ -11,7 +11,7 @@ import {
   Spin,
   Alert,
 } from "antd";
-import { VoucherCreateRequest } from "../../data";
+import {SortDirection, VoucherCreateRequest} from "../../data";
 import { useCreateVoucher } from "../../hooks";
 import { useAccounts } from "../../hooks";
 import { useNavigate } from "react-router";
@@ -30,7 +30,7 @@ export const VoucherCreate: React.FC = () => {
     data: accountsData,
     isLoading: isAccountsLoading,
     error: accountsError,
-  } = useAccounts(0, 100); // Fetch up to 100 accounts
+  } = useAccounts(0, 100, new Record<string, SortDirection>()); // Fetch up to 100 accounts
 
   const generateVoucherCode = () => {
     const timestamp = Date.now().toString(36).toUpperCase();

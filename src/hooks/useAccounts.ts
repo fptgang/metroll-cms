@@ -5,7 +5,7 @@ import {
   AccountCreateRequest,
   AccountUpdateRequest,
   AccountFilter,
-  PageableDto,
+  PageableDto, SortDirection,
 } from "../data/interfaces";
 import { accountService } from "../data/services";
 
@@ -13,19 +13,20 @@ import { accountService } from "../data/services";
 const QUERY_KEYS = {
   accounts: ["accounts"] as const,
   account: (id: string) => ["accounts", id] as const,
-  accountsPage: (page: number, size: number, filters?: AccountFilter) =>
-    ["accounts", "page", page, size, filters] as const,
+  accountsPage: (page: number, size: number, sort?: Record<string, SortDirection>, filters?: AccountFilter) =>
+    ["accounts", "page", page, size, sort, filters] as const,
 };
 
 // Get paginated accounts
 export const useAccounts = (
   page: number = 0,
   size: number = 10,
+  sort: Record<string, SortDirection> = {},
   filters?: AccountFilter
 ) => {
   return useQuery({
-    queryKey: QUERY_KEYS.accountsPage(page, size, filters),
-    queryFn: () => accountService.getAccounts({ page, size }, filters),
+    queryKey: QUERY_KEYS.accountsPage(page, size, sort, filters),
+    queryFn: () => accountService.getAccounts({ page, size, sort }, filters),
   });
 };
 

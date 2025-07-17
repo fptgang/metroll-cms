@@ -4,7 +4,7 @@ import { Card, Form, Input, Button, Space, Select, Spin } from "antd";
 import { SaveOutlined, ArrowLeftOutlined } from "@ant-design/icons";
 import {
   AccountDiscountAssignRequest,
-  AccountRole,
+  AccountRole, SortDirection,
 } from "../../data/interfaces";
 import {
   useAssignDiscountPackage,
@@ -26,6 +26,7 @@ export const AccountDiscountPackageAssign: React.FC = () => {
   const { data: accountsData, isLoading: loadingAccounts } = useAccounts(
     0,
     100,
+      new Record<string, SortDirection>(),
     { role: AccountRole.CUSTOMER, active: true }
   );
 

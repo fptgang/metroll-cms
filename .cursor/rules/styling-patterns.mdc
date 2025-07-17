@@ -1,7 +1,6 @@
 ---
-globs: "*.tsx,*.css"
+alwaysApply: true
 ---
-
 # Styling Patterns for Metroll CMS
 
 ## UI Framework Stack

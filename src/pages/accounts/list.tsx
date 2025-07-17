@@ -16,6 +16,7 @@ import {
   Pagination,
   Tooltip,
 } from "antd";
+import type { SortOrder } from "antd/es/table/interface";
 import {
   UserOutlined,
   SearchOutlined,
@@ -23,7 +24,7 @@ import {
   DeleteOutlined,
   CheckCircleOutlined,
 } from "@ant-design/icons";
-import { AccountDto, AccountRole } from "../../data";
+import {AccountDto, AccountRole, SortDirection} from "../../data";
 import {
   useAccounts,
   useActivateAccount,
@@ -38,8 +39,9 @@ export const AccountList: React.FC = () => {
   const [size, setSize] = useState(10);
   const [searchQuery, setSearchQuery] = useState("");
   const perm = usePermissions();
+  const [sort, setSort] = useState<Record<string, SortDirection>>();
 
-  const { data, isLoading, error } = useAccounts(page, size, {
+  const { data, isLoading, error } = useAccounts(page, size, sort, {
     search: searchQuery
   });
   const deleteMutation = useDeleteAccount();
@@ -51,6 +53,34 @@ export const AccountList: React.FC = () => {
 
   const handleActivate = (id: string) => {
     activateMutation.mutate(id);
+  };
+
+  // Handle table changes including sorting
+  const handleTableChange = (pagination: any, filters: any, sorter: any) => {
+    const newSort: Record<string, SortDirection> = {};
+    
+    // Handle multiple column sorting
+    if (Array.isArray(sorter)) {
+      sorter.forEach((s) => {
+        if (s.field && s.order) {
+          newSort[s.field] = s.order === 'ascend' ? SortDirection.ASC : SortDirection.DESC;
+        }
+      });
+    } else if (sorter.field && sorter.order) {
+      // Handle single column sorting
+      newSort[sorter.field] = sorter.order === 'ascend' ? SortDirection.ASC : SortDirection.DESC;
+    }
+    
+    setSort(Object.keys(newSort).length > 0 ? newSort : undefined);
+  };
+
+  // Convert sort state to antd sorter format for controlled sorting
+  const getSorterProps = (field: string) => {
+    const sortDirection = sort?.[field];
+    return {
+      sorter: true,
+      sortOrder: sortDirection ? (sortDirection === SortDirection.ASC ? 'ascend' : 'descend') as SortOrder : undefined,
+    };
   };
 
   const accounts = data?.content || [];
@@ -72,6 +102,7 @@ export const AccountList: React.FC = () => {
           rowKey="id"
           loading={isLoading}
           pagination={false}
+          onChange={handleTableChange}
         >
           <Table.Column
             dataIndex="avatar"
@@ -79,9 +110,21 @@ export const AccountList: React.FC = () => {
             render={() => <Avatar size="small" icon={<UserOutlined />} />}
             width="80px"
           />
-          <Table.Column dataIndex="fullName" title="Full Name" />
-          <Table.Column dataIndex="email" title="Email" />
-          <Table.Column dataIndex="phoneNumber" title="Phone Number" />
+          <Table.Column 
+            dataIndex="fullName" 
+            title="Full Name" 
+            {...getSorterProps('fullName')}
+          />
+          <Table.Column 
+            dataIndex="email" 
+            title="Email" 
+            {...getSorterProps('email')}
+          />
+          <Table.Column 
+            dataIndex="phoneNumber" 
+            title="Phone Number" 
+            {...getSorterProps('phoneNumber')}
+          />
           <Table.Column
             dataIndex="role"
             title="Role"
@@ -98,6 +141,7 @@ export const AccountList: React.FC = () => {
                 {value}
               </Tag>
             )}
+            {...getSorterProps('role')}
           />
           <Table.Column
             dataIndex="active"
@@ -107,11 +151,13 @@ export const AccountList: React.FC = () => {
                 {value ? "Active" : "Inactive"}
               </Tag>
             )}
+            {...getSorterProps('active')}
           />
           <Table.Column
             dataIndex="createdAt"
             title="Created At"
             render={(value) => formatDate(value)}
+            {...getSorterProps('createdAt')}
           />
           {/* <Table.Column
             dataIndex="discountPackage"

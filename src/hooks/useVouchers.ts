@@ -6,7 +6,7 @@ import {
   VoucherUpdateRequest,
   VoucherFilter,
   VoucherStatus,
-  PageableDto,
+  PageableDto, SortDirection,
 } from "../data/interfaces";
 import { voucherService } from "../data/services";
 
@@ -14,8 +14,8 @@ import { voucherService } from "../data/services";
 const QUERY_KEYS = {
   vouchers: ["vouchers"] as const,
   voucher: (id: string) => ["vouchers", id] as const,
-  vouchersPage: (page: number, size: number, filters?: VoucherFilter) =>
-    ["vouchers", "page", page, size, filters] as const,
+  vouchersPage: (page: number, size: number, sort?: Record<string, SortDirection>, filters?: VoucherFilter) =>
+    ["vouchers", "page", page, size, sort, filters] as const,
   voucherByCode: (code: string) => ["vouchers", "code", code] as const,
 };
 
@@ -23,11 +23,12 @@ const QUERY_KEYS = {
 export const useVouchers = (
   page: number = 0,
   size: number = 10,
+  sort: Record<string, SortDirection> = {},
   filters?: VoucherFilter
 ) => {
   return useQuery({
-    queryKey: QUERY_KEYS.vouchersPage(page, size, filters),
-    queryFn: () => voucherService.getVouchers({ page, size }, filters),
+    queryKey: QUERY_KEYS.vouchersPage(page, size, sort, filters),
+    queryFn: () => voucherService.getVouchers({ page, size, sort }, filters),
   });
 };
 
