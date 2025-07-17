@@ -23,6 +23,8 @@ import {
   CheckOutlined,
 } from "@ant-design/icons";
 
+import { ThemedHeader } from "./components/header";
+
 import routerBindings, {
   DocumentTitleHandler,
   UnsavedChangesNotifier,
@@ -291,9 +293,12 @@ function InnerApp({ isAuthenticated }: InnerAppProps) {
             <Route path="*" element={<FirebaseLoginPage />} />
         ) : (
             /* Show main app if authenticated */
-            <Route
+                            <Route
                 element={
                   <ThemedLayoutV2
+                      Header={(props) => (
+                          <ThemedHeader {...props} />
+                      )}
                       Sider={(props) => (
                           <ThemedSiderV2 {...props} fixed />
                       )}
