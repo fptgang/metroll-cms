@@ -39,7 +39,9 @@ export const AccountList: React.FC = () => {
   const [size, setSize] = useState(10);
   const [searchQuery, setSearchQuery] = useState("");
   const perm = usePermissions();
-  const [sort, setSort] = useState<Record<string, SortDirection>>();
+  const [sort, setSort] = useState<Record<string, SortDirection>>({
+    createdAt: SortDirection.DESC
+  });
 
   const { data, isLoading, error } = useAccounts(page, size, sort, {
     search: searchQuery
@@ -71,7 +73,7 @@ export const AccountList: React.FC = () => {
       newSort[sorter.field] = sorter.order === 'ascend' ? SortDirection.ASC : SortDirection.DESC;
     }
     
-    setSort(Object.keys(newSort).length > 0 ? newSort : undefined);
+    setSort(Object.keys(newSort).length > 0 ? newSort : { createdAt: SortDirection.DESC });
   };
 
   // Convert sort state to antd sorter format for controlled sorting
@@ -104,11 +106,10 @@ export const AccountList: React.FC = () => {
           pagination={false}
           onChange={handleTableChange}
         >
-          <Table.Column
-            dataIndex="avatar"
-            title="Avatar"
-            render={() => <Avatar size="small" icon={<UserOutlined />} />}
-            width="80px"
+          <Table.Column 
+            dataIndex="id" 
+            title="ID" 
+            {...getSorterProps('id')}
           />
           <Table.Column 
             dataIndex="fullName" 

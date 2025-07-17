@@ -121,7 +121,6 @@ export const OrderList: React.FC = () => {
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
   const [filters, setFilters] = useState<OrderFilter>({});
-  const [accounts, setAccounts] = useState<AccountDto[]>([]);
   const navigate = useNavigate();
   // Dashboard stats
   const {
@@ -166,26 +165,6 @@ export const OrderList: React.FC = () => {
       currency: "VND",
     }).format(amount);
   };
-
-  useEffect(() => {
-    if (ordersData && ordersData.content.length > 0) {
-      // Extract unique customer IDs from orders
-      ordersData.content
-        .map((order: OrderDto) => order.customerId)
-        .filter(
-          (customerId: string, index: number, self: string[]) =>
-            // Filter out duplicates and empty IDs
-            customerId &&
-            self.indexOf(customerId) === index &&
-            !accounts.some((acc) => acc.id === customerId)
-        )
-        .forEach((customerId: string) => {
-          accountService
-            .getAccountById(customerId)
-            .then((accounts) => setAccounts((prev) => [...prev, accounts]));
-        });
-    }
-  }, [ordersData]);
 
   return (
     <div className="p-6 space-y-6">
@@ -422,20 +401,25 @@ export const OrderList: React.FC = () => {
           />
 
           <Table.Column
-            dataIndex="customerId"
+            dataIndex={["customer", "fullName"]}
             title="Customer"
             render={(value: string) => {
               return (
-                <Space>
-                  <Avatar size="small">
-                    {accounts
-                      .find((acc) => acc.id === value)
-                      ?.fullName?.[0].toUpperCase()}
-                  </Avatar>
-                  <Text>
-                    {accounts.find((acc) => acc.id === value)?.fullName}
-                  </Text>
-                </Space>
+                <Text>
+                  {value}
+                </Text>
+              );
+            }}
+          />
+
+          <Table.Column
+            dataIndex={["staff", "fullName"]}
+            title="Staff"
+            render={(value: string) => {
+              return (
+                <Text>
+                  {value}
+                </Text>
               );
             }}
           />

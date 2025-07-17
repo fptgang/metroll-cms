@@ -1,3 +1,4 @@
+import { AccountDto } from "./account";
 import { BaseEntity } from "./common";
 
 // Discount Package DTO - mirrors DiscountPackageDto.java
@@ -12,6 +13,7 @@ export interface DiscountPackageDto extends BaseEntity {
 // Account Discount Package DTO - mirrors AccountDiscountPackageDto.java
 export interface AccountDiscountPackageDto extends BaseEntity {
   accountId: string;
+  account: AccountDto;
   discountPackageId: string;
   activateDate: string;
   validUntil: string;

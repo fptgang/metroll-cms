@@ -1,5 +1,6 @@
 import { BaseEntity } from "./common";
 import { TicketStatus, TicketType, ValidationType } from "../types/enums";
+import { AccountDto } from "./account";
 
 // Ticket DTO - mirrors TicketDto.java
 export interface TicketDto extends BaseEntity {
@@ -74,6 +75,7 @@ export interface TicketValidationDto extends BaseEntity {
   validationType: ValidationType;
   validationTime: string;
   validatorId: string; // Changed from deviceId to validatorId to match API docs
+  validator: AccountDto;
 }
 
 // Ticket Validation Create Request - simplified to match API docs
