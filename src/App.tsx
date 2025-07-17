@@ -280,6 +280,9 @@ function InnerApp({ isAuthenticated }: InnerAppProps) {
           warnWhenUnsavedChanges: true,
           useNewQueryKeys: true,
           projectId: "BS4brD-dWcDtG-ry1qOK",
+          title: {
+            text: "Metroll",
+          }
         }}
     >
       <Routes>
@@ -475,7 +478,6 @@ function App() {
 
   return (
     <BrowserRouter>
-      <GitHubBanner />
       <RefineKbarProvider>
         <ConfigProvider
           theme={{
