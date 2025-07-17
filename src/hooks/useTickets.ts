@@ -6,6 +6,7 @@ import {
   TicketFilter,
   TicketStatus,
   PageableDto,
+  SortDirection,
 } from "../data/interfaces";
 import { ticketService } from "../data/services";
 
@@ -13,8 +14,8 @@ import { ticketService } from "../data/services";
 const QUERY_KEYS = {
   tickets: ["tickets"] as const,
   ticket: (id: string) => ["tickets", id] as const,
-  ticketsPage: (page: number, size: number, filters?: TicketFilter) =>
-    ["tickets", "page", page, size, filters] as const,
+  ticketsPage: (page: number, size: number, sort?: Record<string, SortDirection>, filters?: TicketFilter) =>
+    ["tickets", "page", page, size, sort, filters] as const,
   ticketByNumber: (ticketNumber: string) =>
     ["tickets", "number", ticketNumber] as const,
 };
@@ -23,11 +24,12 @@ const QUERY_KEYS = {
 export const useTickets = (
   page: number = 0,
   size: number = 10,
+  sort?: Record<string, SortDirection>,
   filters?: TicketFilter
 ) => {
   return useQuery({
-    queryKey: QUERY_KEYS.ticketsPage(page, size, filters),
-    queryFn: () => ticketService.getTickets({ page, size }, filters),
+    queryKey: QUERY_KEYS.ticketsPage(page, size, sort, filters),
+    queryFn: () => ticketService.getTickets({ page, size, sort }, filters),
   });
 };
 

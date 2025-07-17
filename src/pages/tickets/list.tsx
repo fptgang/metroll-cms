@@ -6,8 +6,9 @@ import {
   CreateButton,
 } from "@refinedev/antd";
 import { Table, Space, Tag, Card, Input, Pagination } from "antd";
+import type { SortOrder } from "antd/es/table/interface";
 import { SearchOutlined } from "@ant-design/icons";
-import { TicketDto, TicketStatus, TicketType } from "../../data";
+import { TicketDto, TicketStatus, TicketType, SortDirection } from "../../data";
 import { useTickets } from "../../hooks";
 import { formatDate } from "../../utils/formatDate";
 
@@ -15,12 +16,45 @@ export const TicketList: React.FC = () => {
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
   const [searchQuery, setSearchQuery] = useState("");
+  const [sort, setSort] = useState<Record<string, SortDirection>>({
+    createdAt: SortDirection.DESC
+  });
 
-  const { data, isLoading } = useTickets(page, size);
+  const { data, isLoading } = useTickets(page, size, sort, {
+    search: searchQuery
+  });
+
+  // Handle table changes including sorting
+  const handleTableChange = (pagination: any, filters: any, sorter: any) => {
+    const newSort: Record<string, SortDirection> = {};
+    
+    // Handle multiple column sorting
+    if (Array.isArray(sorter)) {
+      sorter.forEach((s) => {
+        if (s.field && s.order) {
+          newSort[s.field] = s.order === 'ascend' ? SortDirection.ASC : SortDirection.DESC;
+        }
+      });
+    } else if (sorter.field && sorter.order) {
+      // Handle single column sorting
+      newSort[sorter.field] = sorter.order === 'ascend' ? SortDirection.ASC : SortDirection.DESC;
+    }
+    
+    setSort(Object.keys(newSort).length > 0 ? newSort : { createdAt: SortDirection.DESC });
+  };
+
+  // Convert sort state to antd sorter format for controlled sorting
+  const getSorterProps = (field: string) => {
+    const sortDirection = sort?.[field];
+    return {
+      sorter: true,
+      sortOrder: sortDirection ? (sortDirection === SortDirection.ASC ? 'ascend' : 'descend') as SortOrder : undefined,
+    };
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "ACTIVE":
+      case "VALID":
         return "green";
       case "USED":
         return "blue";
@@ -35,9 +69,9 @@ export const TicketList: React.FC = () => {
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case "SINGLE_JOURNEY":
+      case "P2P":
         return "blue";
-      case "TIMED_PASS":
+      case "TIMED":
         return "purple";
       default:
         return "default";
@@ -63,14 +97,20 @@ export const TicketList: React.FC = () => {
           rowKey="id"
           loading={isLoading}
           pagination={false}
+          onChange={handleTableChange}
         >
-          <Table.Column dataIndex="ticketNumber" title="Ticket Number" />
+          <Table.Column 
+            dataIndex="ticketNumber" 
+            title="Ticket Number" 
+            {...getSorterProps('ticketNumber')}
+          />
           <Table.Column
             dataIndex="ticketType"
             title="Type"
             render={(value: string) => (
-              <Tag color={getTypeColor(value)}>{value.replace("_", " ")}</Tag>
+              <Tag color={getTypeColor(value)}>{value === "P2P" ? "P2P" : "TIMED"}</Tag>
             )}
+            {...getSorterProps('ticketType')}
           />
           <Table.Column
             dataIndex="status"
@@ -78,21 +118,25 @@ export const TicketList: React.FC = () => {
             render={(value: string) => (
               <Tag color={getStatusColor(value)}>{value}</Tag>
             )}
+            {...getSorterProps('status')}
           />
           <Table.Column
             dataIndex="purchaseDate"
             title="Purchase Date"
             render={(value: string) => formatDate(value)}
+            {...getSorterProps('purchaseDate')}
           />
           <Table.Column
             dataIndex="validUntil"
             title="Valid Until"
             render={(value: string) => formatDate(value)}
+            {...getSorterProps('validUntil')}
           />
           <Table.Column
             dataIndex="createdAt"
             title="Created At"
             render={(value: string) => formatDate(value)}
+            {...getSorterProps('createdAt')}
           />
           <Table.Column
             title="Actions"

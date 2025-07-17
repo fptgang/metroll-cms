@@ -65,7 +65,7 @@ export const DiscountPackageList: React.FC = () => {
       newSort[sorter.field] = sorter.order === 'ascend' ? SortDirection.ASC : SortDirection.DESC;
     }
     
-    setSort(Object.keys(newSort).length > 0 ? newSort : undefined);
+    setSort(Object.keys(newSort).length > 0 ? newSort : {});
   };
 
   // Convert sort state to antd sorter format for controlled sorting
