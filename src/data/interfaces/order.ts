@@ -1,5 +1,8 @@
 // Order Service Interface Definitions
 
+import { TicketType } from "../types/enums";
+import { AccountDto } from "./account";
+
 // Order Enums and Types
 export enum OrderStatus {
   PENDING = "PENDING",
@@ -68,47 +71,44 @@ export interface TicketReferenceDto {
 export interface OrderDetailDto {
   id: string;
   orderId: string;
-  ticketId: string;
-  productName: string;
-  productDescription?: string;
-  unitPrice: number;
-  quantity: number;
-  totalPrice: number;
   ticketType?: string;
-  startStationId?: string;
-  endStationId?: string;
-  validityDuration?: number;
-  generatedTickets: TicketReferenceDto[];
-  timedTicketPlan: string;
-  p2pJourney: string;
+  p2pJourney?: string;
+  timedTicketPlan?: string;
+  unitPrice: number;
+  baseTotal: number;
+  discountTotal: number;
+  finalTotal: number;
   createdAt: string;
-  updatedAt: string;
 }
 
 export interface OrderDto {
   id: string;
-  orderNumber: string;
-  customerId: string;
-  customerInfo: CustomerInfoDto;
-  orderType: OrderType;
-  status: OrderStatus;
-  baseTotal: number;
-  discountTotal: number;
-  taxAmount: number;
-  finalTotal: number;
-  discountPackage: string;
-  currency: string;
-  paymentMethod?: PaymentMethod;
-  paymentStatus: PaymentStatus;
-  paymentReference?: string;
+
+  // Nhân viên giúp mua vé offline
+  staffId: string;
+  staff: AccountDto; // Reference to Account
+
+  // Khách hàng, có thể null nếu nhân viên ko nhập
+  customerId: string | null;
+  customer: AccountDto | null; // Reference to Account
+
+  discountPackage: string; // Reference to AccountDiscountPackage._id
+  voucher: string; // Reference to Voucher._id
+
+  baseTotal: number; // tổng giá
+  discountTotal: number; // tổng discount
+  finalTotal: number; // tổng cuối cùng
+
+  paymentMethod: 'CASH' | 'VNPAY' | 'PAYOS';
+  status: 'PENDING' | 'COMPLETED' | 'FAILED';
+  transactionReference: string;
+
+  // PayOS payment information
+  paymentUrl: string;
+  qrCode: string;
+
   orderDetails: OrderDetailDto[];
-  appliedVouchers: AppliedVoucherDto[];
-  voucher?: string;
-  orderDate: string;
-  paymentDate?: string;
-  completionDate?: string;
-  notes?: string;
-  createdAt: string;
+  createdAt: string; // ISO 8601 string (Instant in Java)
   updatedAt: string;
 }
 
@@ -205,4 +205,19 @@ export interface OrderAnalyticsParam {
 // Filter interfaces for API requests
 export interface OrderFilter extends OrderQueryParam {
   // Additional filter properties if needed
+}
+
+// Checkout interfaces for staff offline tool
+export interface CheckoutItemRequest {
+  ticketType: TicketType;
+  p2pJourneyId?: string; // Required for P2P tickets
+  timedTicketPlanId?: string; // Required for TIMED tickets
+  quantity: number;
+}
+
+export interface CheckoutRequest {
+  items: CheckoutItemRequest[];
+  paymentMethod: PaymentMethod;
+  voucherId?: string;
+  customerId?: string;
 }

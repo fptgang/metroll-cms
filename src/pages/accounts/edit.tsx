@@ -109,7 +109,6 @@ export const AccountEdit: React.FC = () => {
             <Select placeholder="Select role">
               {
                 perm.data === "ADMIN" && <>
-                    <Select.Option value={AccountRole.ADMIN}>Admin</Select.Option>
                     <Select.Option value={AccountRole.STAFF}>Staff</Select.Option>
                   </>
               }

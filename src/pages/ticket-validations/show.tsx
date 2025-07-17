@@ -144,7 +144,7 @@ export const TicketValidationShow: React.FC = () => {
             <Title level={5}>
               <ClockCircleOutlined /> Validation Time
             </Title>
-            <Text style={{ fontSize: "16px", fontWeight: "bold" }}>
+            <Text>
               {formatDate(validation.validationTime)}
             </Text>
           </Col>

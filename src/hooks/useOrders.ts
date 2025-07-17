@@ -9,6 +9,7 @@ import {
   PageableDto,
   PaymentConfirmationRequest,
   RefundRequest,
+  CheckoutRequest,
 } from "../data/interfaces";
 import { orderService } from "../data/services";
 import { message } from "antd";
@@ -120,7 +121,27 @@ export const useCreateOrder = () => {
   return useMutation({
     mutationFn: (order: OrderCreateRequest) => orderService.createOrder(order),
     onSuccess: (data) => {
-      message.success(`Order ${data.orderNumber} created successfully!`);
+      message.success(`Order ${data.id} created successfully!`);
+      queryClient.invalidateQueries({
+        queryKey: ORDER_KEYS.all,
+      });
+    },
+    onError: (error: any) => {
+      message.error(
+        error?.message || "Failed to create order. Please try again."
+      );
+    },
+  });
+};
+
+// Checkout mutation for staff offline tool
+export const useOrderCheckout = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (checkoutRequest: CheckoutRequest) => orderService.checkout(checkoutRequest),
+    onSuccess: (data) => {
+      message.success(`Order ${data.id} created successfully!`);
       queryClient.invalidateQueries({
         queryKey: ORDER_KEYS.all,
       });
@@ -146,7 +167,7 @@ export const useUpdateOrder = () => {
       update: OrderUpdateRequest;
     }) => orderService.updateOrder(orderNumber, update),
     onSuccess: (data) => {
-      message.success(`Order ${data.orderNumber} updated successfully!`);
+      message.success(`Order ${data.id} updated successfully!`);
       queryClient.invalidateQueries({
         queryKey: ORDER_KEYS.all,
       });
@@ -172,7 +193,7 @@ export const useConfirmPayment = () => {
       payment: PaymentConfirmationRequest;
     }) => orderService.confirmPayment(orderNumber, payment),
     onSuccess: (data) => {
-      message.success(`Payment confirmed for order ${data.orderNumber}!`);
+      message.success(`Payment confirmed for order ${data.id}!`);
       queryClient.invalidateQueries({
         queryKey: ORDER_KEYS.all,
       });
@@ -198,7 +219,7 @@ export const useProcessRefund = () => {
       refund: RefundRequest;
     }) => orderService.processRefund(orderNumber, refund),
     onSuccess: (data) => {
-      message.success(`Refund processed for order ${data.orderNumber}!`);
+      message.success(`Refund processed for order ${data.id}!`);
       queryClient.invalidateQueries({
         queryKey: ORDER_KEYS.all,
       });
@@ -255,6 +276,7 @@ export const orderHooks = {
   useDashboardStats,
   useOrderAnalytics,
   useCreateOrder,
+  useOrderCheckout,
   useUpdateOrder,
   useConfirmPayment,
   useProcessRefund,

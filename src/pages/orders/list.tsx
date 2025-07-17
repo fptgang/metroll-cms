@@ -51,11 +51,13 @@ import {
   OrderDto,
   AccountDto,
 } from "../../data/interfaces";
+import { SortDirection } from "../../data/types/enums";
 import { useOrders, useDashboardStats } from "../../hooks";
 import { formatCurrency } from "../../utils/formatCurrency";
 import { accountService } from "../../data";
 import { formatDate } from "../../utils/formatDate";
 import { useNavigate } from "react-router";
+import { SortOrder } from "antd/es/table/interface";
 
 const { RangePicker } = DatePicker;
 const { Text } = Typography;
@@ -121,6 +123,9 @@ export const OrderList: React.FC = () => {
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
   const [filters, setFilters] = useState<OrderFilter>({});
+  const [sort, setSort] = useState<Record<string, SortDirection>>({
+    createdAt: SortDirection.DESC
+  });
   const navigate = useNavigate();
   // Dashboard stats
   const {
@@ -134,36 +139,41 @@ export const OrderList: React.FC = () => {
     data: ordersData,
     isLoading: ordersLoading,
     refetch: refetchOrders,
-  } = useOrders({ page, size }, filters);
-
-  // Table action items
-  const getActionItems = (record: OrderDto): MenuProps["items"] => [
-    {
-      key: "view",
-      icon: <EyeOutlined />,
-      label: "View Details",
-    },
-    {
-      key: "edit",
-      icon: <EditOutlined />,
-      label: "Edit Order",
-      disabled: record.status === OrderStatus.COMPLETED,
-    },
-    {
-      type: "divider",
-    },
-    {
-      key: "export",
-      icon: <ExportOutlined />,
-      label: "Export Order",
-    },
-  ];
+  } = useOrders({ page, size, sort }, filters);
 
   const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",
       currency: "VND",
     }).format(amount);
+  };
+
+  // Handle table changes including sorting
+  const handleTableChange = (pagination: any, filters: any, sorter: any) => {
+    const newSort: Record<string, SortDirection> = {};
+    
+    // Handle multiple column sorting
+    if (Array.isArray(sorter)) {
+      sorter.forEach((s) => {
+        if (s.field && s.order) {
+          newSort[s.field] = s.order === 'ascend' ? SortDirection.ASC : SortDirection.DESC;
+        }
+      });
+    } else if (sorter.field && sorter.order) {
+      // Handle single column sorting
+      newSort[sorter.field] = sorter.order === 'ascend' ? SortDirection.ASC : SortDirection.DESC;
+    }
+    
+    setSort(Object.keys(newSort).length > 0 ? newSort : { createdAt: SortDirection.DESC });
+  };
+
+  // Convert sort state to antd sorter format for controlled sorting
+  const getSorterProps = (field: string) => {
+    const sortDirection = sort?.[field];
+    return {
+      sorter: true,
+      sortOrder: sortDirection ? (sortDirection === SortDirection.ASC ? 'ascend' : 'descend') as SortOrder : undefined,
+    };
   };
 
   return (
@@ -373,6 +383,7 @@ export const OrderList: React.FC = () => {
           rowKey="id"
           loading={ordersLoading}
           scroll={{ x: 1200 }}
+          onChange={handleTableChange}
           pagination={{
             current: page + 1,
             pageSize: size,
@@ -398,6 +409,7 @@ export const OrderList: React.FC = () => {
                 </Text>
               </Space>
             )}
+            {...getSorterProps('id')}
           />
 
           <Table.Column
@@ -410,6 +422,7 @@ export const OrderList: React.FC = () => {
                 </Text>
               );
             }}
+            {...getSorterProps('customer.fullName')}
           />
 
           <Table.Column
@@ -422,6 +435,7 @@ export const OrderList: React.FC = () => {
                 </Text>
               );
             }}
+            {...getSorterProps('staff.fullName')}
           />
 
           <Table.Column
@@ -440,6 +454,7 @@ export const OrderList: React.FC = () => {
                 </Tag>
               );
             }}
+            {...getSorterProps('status')}
           />
 
           <Table.Column
@@ -450,6 +465,7 @@ export const OrderList: React.FC = () => {
                 {formatCurrency(value)}
               </Text>
             )}
+            {...getSorterProps('finalTotal')}
           />
 
           <Table.Column
@@ -465,6 +481,7 @@ export const OrderList: React.FC = () => {
                 </Tag>
               );
             }}
+            {...getSorterProps('paymentMethod')}
           />
 
           <Table.Column
@@ -476,6 +493,7 @@ export const OrderList: React.FC = () => {
                 format="MMM DD, YYYY HH:mm"
               />
             )}
+            {...getSorterProps('createdAt')}
           />
 
           <Table.Column
@@ -494,37 +512,15 @@ export const OrderList: React.FC = () => {
                   />
                 </Tooltip>
 
-                <Tooltip title="Edit Order">
+                {false && <Tooltip title="Edit Order">
                   <Button
                     icon={<EditOutlined />}
                     size="small"
-                    disabled={record.status === OrderStatus.COMPLETED}
                     onClick={() => {
                       navigate(`/orders/edit/${record.id}`);
                     }}
                   />
-                </Tooltip>
-
-                <Dropdown
-                  menu={{
-                    items: getActionItems(record),
-                    onClick: ({ key }) => {
-                      switch (key) {
-                        case "view":
-                          window.location.href = `/orders/show/${record.id}`;
-                          break;
-                        case "edit":
-                          window.location.href = `/orders/edit/${record.id}`;
-                          break;
-                        default:
-                          break;
-                      }
-                    },
-                  }}
-                  trigger={["click"]}
-                >
-                  <Button icon={<MoreOutlined />} size="small" />
-                </Dropdown>
+                </Tooltip>}
               </Space>
             )}
           />

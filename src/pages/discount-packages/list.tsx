@@ -15,9 +15,10 @@ import {
   Pagination,
   Select,
   Tooltip,
+  Popconfirm,
 } from "antd";
 import type { SortOrder } from "antd/es/table/interface";
-import { SearchOutlined, GiftOutlined } from "@ant-design/icons";
+import { SearchOutlined, GiftOutlined, DeleteOutlined } from "@ant-design/icons";
 import { DiscountPackageDto, SortDirection } from "../../data/interfaces";
 import { useDiscountPackages, useTerminateDiscountPackage } from "../../hooks";
 import { formatDate } from "../../utils/formatDate";
@@ -171,17 +172,23 @@ export const DiscountPackageList: React.FC = () => {
                 {(perm.data === 'ADMIN' && record.status === "ACTIVE") && (
                     <>
                       <EditButton hideText size="small" recordItemId={record.id} />
-                      <Tooltip title="Terminate Package">
-                        <Button
-                            type="text"
-                            size="small"
-                            danger
-                            onClick={() => handleTerminate(record.id)}
-                            loading={terminateMutation.isPending}
-                        >
-                          <DeleteButton hideText size="small" />
-                        </Button>
-                      </Tooltip>
+                      <Popconfirm
+                        title="Terminate discount package"
+                        description="Are you sure?"
+                        onConfirm={() => handleTerminate(record.id)}
+                        okText="Yes"
+                        cancelText="No"
+                      >
+                        <Tooltip title="Terminate Package">
+                          <Button
+                              type="text"
+                              size="small"
+                              danger
+                              loading={terminateMutation.isPending}
+                              icon={<DeleteOutlined />}
+                          />
+                        </Tooltip>
+                      </Popconfirm>
                     </>
                 )}
               </Space>

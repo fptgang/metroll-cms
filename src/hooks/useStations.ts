@@ -1,14 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { message } from "antd";
-import { StationDto, StationFilter, PageableDto } from "../data/interfaces";
+import { StationDto, StationFilter, PageableDto, SortDirection } from "../data/interfaces";
 import { subwayService } from "../data/services";
 
 // Query Keys
 const QUERY_KEYS = {
   stations: ["stations"] as const,
   station: (code: string) => ["stations", code] as const,
-  stationsPage: (page: number, size: number, filters?: StationFilter) =>
-    ["stations", "page", page, size, filters] as const,
+  stationsPage: (page: number, size: number, sort?: Record<string, SortDirection>, filters?: StationFilter) =>
+    ["stations", "page", page, size, sort, filters] as const,
   operationalStations: ["stations", "operational"] as const,
 };
 
@@ -16,11 +16,12 @@ const QUERY_KEYS = {
 export const useStations = (
   page: number = 0,
   size: number = 10,
+  sort: Record<string, SortDirection> = {},
   filters?: StationFilter
 ) => {
   return useQuery({
-    queryKey: QUERY_KEYS.stationsPage(page, size, filters),
-    queryFn: () => subwayService.getStations({ page, size }, filters),
+    queryKey: QUERY_KEYS.stationsPage(page, size, sort, filters),
+    queryFn: () => subwayService.getStations({ page, size, sort }, filters),
   });
 };
 

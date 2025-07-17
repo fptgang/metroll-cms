@@ -1,171 +1,174 @@
 import React, { useState } from "react";
+import { CreateButton } from "@refinedev/antd";
 import {
   Table,
-  Space,
-  Tag,
   Card,
-  Button,
-  Modal,
-  Form,
-  Select,
+  Input,
+  Tag,
   Typography,
+  Button,
+  Pagination,
+  Space,
+  Dropdown,
   Avatar,
   Tooltip,
-  Alert,
-  Pagination,
-  Input,
+  Badge,
 } from "antd";
+import type { SortOrder } from "antd/es/table/interface";
 import {
-  UserOutlined,
-  EnvironmentOutlined,
-  EditOutlined,
+  SearchOutlined,
   TeamOutlined,
+  MailOutlined,
+  PhoneOutlined,
+  EnvironmentOutlined,
+  UserOutlined,
+  SettingOutlined,
+  EyeOutlined,
+  EditOutlined,
+  DeleteOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
-  ExclamationCircleOutlined,
-  SearchOutlined,
 } from "@ant-design/icons";
-import {
-  AccountDto,
-  StationAssignmentRequest,
-  AccountFilter,
-} from "../../data/interfaces";
-import {
-  useStaff,
-  useAssignStationToStaff,
-  useOperationalStations,
-} from "../../hooks";
+import { AccountDto, AccountRole, SortDirection } from "../../data/interfaces";
+import { useStaff } from "../../hooks";
 import { formatDate } from "../../utils/formatDate";
 
-const { Option } = Select;
 const { Title, Text } = Typography;
 const { Search } = Input;
 
 export const StaffList: React.FC = () => {
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
-  const [filters, setFilters] = useState<AccountFilter>({});
-  const [assignModalVisible, setAssignModalVisible] = useState(false);
-  const [selectedStaff, setSelectedStaff] = useState<AccountDto | null>(null);
-  const [assignForm] = Form.useForm();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sort, setSort] = useState<Record<string, SortDirection>>({
+    createdAt: SortDirection.DESC
+  });
 
-  const { data: staffData, isLoading, error } = useStaff(page, size, filters);
-  const { data: stations, isLoading: stationsLoading } =
-    useOperationalStations();
-  const assignStation = useAssignStationToStaff();
-
-  const staff = staffData?.content || [];
-  const total = staffData?.totalElements || 0;
+  const { data, isLoading, error } = useStaff(page, size, sort, {
+    search: searchQuery,
+    role: AccountRole.STAFF,
+  });
 
   const handleSearch = (value: string) => {
-    setFilters({ ...filters, search: value });
-    setPage(0); // Reset to first page when searching
+    setSearchQuery(value);
+    setPage(0);
   };
 
-  const handleAssignStation = (staffMember: AccountDto) => {
-    setSelectedStaff(staffMember);
-    assignForm.setFieldsValue({
-      stationCode: staffMember.assignedStation || undefined,
-    });
-    setAssignModalVisible(true);
+  // Handle table changes including sorting
+  const handleTableChange = (pagination: any, filters: any, sorter: any) => {
+    const newSort: Record<string, SortDirection> = {};
+    
+    // Handle multiple column sorting
+    if (Array.isArray(sorter)) {
+      sorter.forEach((s) => {
+        if (s.field && s.order) {
+          newSort[s.field] = s.order === 'ascend' ? SortDirection.ASC : SortDirection.DESC;
+        }
+      });
+    } else if (sorter.field && sorter.order) {
+      // Handle single column sorting
+      newSort[sorter.field] = sorter.order === 'ascend' ? SortDirection.ASC : SortDirection.DESC;
+    }
+    
+    setSort(Object.keys(newSort).length > 0 ? newSort : { createdAt: SortDirection.DESC });
   };
 
-  const handleAssignModalOk = () => {
-    assignForm.validateFields().then((values) => {
-      if (selectedStaff) {
-        const request: StationAssignmentRequest = {
-          stationCode: values.stationCode,
-        };
-
-        assignStation.mutate(
-          { staffId: selectedStaff.id, request },
-          {
-            onSuccess: () => {
-              setAssignModalVisible(false);
-              assignForm.resetFields();
-              setSelectedStaff(null);
-            },
-          }
-        );
-      }
-    });
+  // Convert sort state to antd sorter format for controlled sorting
+  const getSorterProps = (field: string) => {
+    const sortDirection = sort?.[field];
+    return {
+      sorter: true,
+      sortOrder: sortDirection ? (sortDirection === SortDirection.ASC ? 'ascend' : 'descend') as SortOrder : undefined,
+    };
   };
 
-  const handleAssignModalCancel = () => {
-    setAssignModalVisible(false);
-    assignForm.resetFields();
-    setSelectedStaff(null);
-  };
-
-  const getStatusColor = (isActive: boolean, statusText: string) => {
-    if (statusText.toLowerCase() === "pending") return "orange";
-    return isActive ? "green" : "red";
-  };
-
-  const getStatusIcon = (isActive: boolean, statusText: string) => {
-    if (statusText.toLowerCase() === "pending")
-      return <ExclamationCircleOutlined />;
-    return isActive ? <CheckCircleOutlined /> : <CloseCircleOutlined />;
-  };
+  const staff = data?.content || [];
+  const total = data?.totalElements || 0;
 
   const columns = [
     {
-      title: "Staff",
+      title: "Staff Member",
       key: "staff",
       width: 250,
       render: (_: any, record: AccountDto) => (
         <div className="flex items-center gap-3">
           <Avatar size={40} icon={<UserOutlined />} className="bg-blue-500" />
           <div>
-            <div className="font-semibold text-gray-900">{record.fullName}</div>
-            <div className="text-xs text-gray-400">{record.email}</div>
+            <div className="font-medium">{record.fullName}</div>
+            <div className="text-sm text-gray-500">{record.email}</div>
           </div>
         </div>
       ),
     },
     {
-      title: "Role",
-      dataIndex: "role",
-      key: "role",
-      width: 120,
-      render: (role: string) => (
-        <Tag color="blue" className="font-medium">
-          {role?.toUpperCase() || "N/A"}
-        </Tag>
-      ),
+      title: "Full Name",
+      dataIndex: "fullName",
+      key: "fullName",
+      render: (name: string) => <span className="font-medium">{name}</span>,
+      ...getSorterProps('fullName'),
     },
     {
-      title: "Assigned Station",
-      key: "assignedStation",
-      width: 200,
-      render: (_: any, record: AccountDto) => (
-        <div>
-          {record.assignedStation ? (
-            <div className="flex items-center gap-2">
-              <EnvironmentOutlined className="text-green-500" />
-              <div>
-                <div className="font-medium text-green-700">
-                  {record.assignedStation}
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 text-gray-400">
-              <EnvironmentOutlined />
-              <span className="text-sm">No station assigned</span>
-            </div>
-          )}
+      title: "Email",
+      dataIndex: "email",
+      key: "email",
+      render: (email: string) => (
+        <div className="flex items-center gap-2">
+          <MailOutlined className="text-blue-500" />
+          <span className="font-mono text-sm">{email}</span>
         </div>
       ),
+      ...getSorterProps('email'),
     },
     {
       title: "Phone",
       dataIndex: "phoneNumber",
       key: "phoneNumber",
-      width: 120,
       render: (phone: string) => (
-        <span className="font-mono text-sm">{phone || "N/A"}</span>
+        <div className="flex items-center gap-2">
+          <PhoneOutlined className="text-green-500" />
+          <span className="font-mono text-sm">{phone}</span>
+        </div>
       ),
+      ...getSorterProps('phoneNumber'),
+    },
+    {
+      title: "Station Assignment",
+      dataIndex: "assignedStation",
+      key: "assignedStation",
+      render: (station: string) => (
+        <div className="flex items-center gap-2">
+          <EnvironmentOutlined className="text-purple-500" />
+          {station ? (
+            <Badge status="success" text={station} />
+          ) : (
+            <Badge status="default" text="Not Assigned" />
+          )}
+        </div>
+      ),
+      ...getSorterProps('assignedStation'),
+    },
+    {
+      title: "Status",
+      dataIndex: "active",
+      key: "active",
+      render: (active: boolean) => (
+        <Tag
+          color={active ? "green" : "red"}
+          icon={active ? <CheckCircleOutlined /> : <CloseCircleOutlined />}
+        >
+          {active ? "Active" : "Inactive"}
+        </Tag>
+      ),
+      ...getSorterProps('active'),
+    },
+    {
+      title: "Created At",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (date: string) => (
+        <span className="text-sm text-gray-500">{formatDate(date)}</span>
+      ),
+      ...getSorterProps('createdAt'),
     },
     {
       title: "Actions",
@@ -173,34 +176,34 @@ export const StaffList: React.FC = () => {
       width: 120,
       render: (_: any, record: AccountDto) => (
         <Space size="small">
-          <Tooltip title="Manage Station Assignment">
+          <Tooltip title="View Details">
             <Button
-              type="primary"
+              type="text"
+              icon={<EyeOutlined />}
               size="small"
-              icon={<EnvironmentOutlined />}
-              onClick={() => handleAssignStation(record)}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              Assign
-            </Button>
+              className="text-blue-600"
+            />
+          </Tooltip>
+          <Tooltip title="Edit Staff">
+            <Button
+              type="text"
+              icon={<EditOutlined />}
+              size="small"
+              className="text-green-600"
+            />
+          </Tooltip>
+          <Tooltip title="Settings">
+            <Button
+              type="text"
+              icon={<SettingOutlined />}
+              size="small"
+              className="text-purple-600"
+            />
           </Tooltip>
         </Space>
       ),
     },
   ];
-
-  if (error) {
-    return (
-      <div className="p-6">
-        <Alert
-          message="Error"
-          description="Failed to load staff data"
-          type="error"
-          showIcon
-        />
-      </div>
-    );
-  }
 
   return (
     <div className="p-6">
@@ -245,6 +248,12 @@ export const StaffList: React.FC = () => {
             </div>
             <div className="text-sm text-orange-600">Unassigned</div>
           </div>
+          <div className="bg-green-50 p-4 rounded-lg">
+            <div className="text-2xl font-bold text-green-600">
+              {staff.filter((s) => s.active).length}
+            </div>
+            <div className="text-sm text-green-600">Active Staff</div>
+          </div>
         </div>
 
         {/* Staff Table */}
@@ -254,115 +263,30 @@ export const StaffList: React.FC = () => {
           rowKey="id"
           loading={isLoading}
           pagination={false}
+          onChange={handleTableChange}
           className="bg-white rounded-lg"
           size="middle"
           scroll={{ x: 1200 }}
         />
 
         {/* Pagination */}
-        <div className="mt-4 flex justify-center">
+        <div className="flex justify-center mt-6">
           <Pagination
             current={page + 1}
-            total={total}
             pageSize={size}
+            total={total}
             showSizeChanger
             showQuickJumper
             showTotal={(total, range) =>
               `${range[0]}-${range[1]} of ${total} staff members`
             }
-            onChange={(newPage, newSize) => {
-              setPage(newPage - 1);
-              if (newSize !== size) {
-                setSize(newSize);
-              }
-            }}
-            onShowSizeChange={(current, newSize) => {
-              setSize(newSize);
-              setPage(0);
+            onChange={(current, pageSize) => {
+              setPage(current - 1);
+              setSize(pageSize || 10);
             }}
           />
         </div>
       </Card>
-
-      {/* Station Assignment Modal */}
-      <Modal
-        title={
-          <div className="flex items-center gap-2">
-            <EnvironmentOutlined className="text-blue-600" />
-            <span>Assign Station</span>
-          </div>
-        }
-        open={assignModalVisible}
-        onOk={handleAssignModalOk}
-        onCancel={handleAssignModalCancel}
-        confirmLoading={assignStation.isPending}
-        width={500}
-      >
-        {selectedStaff && (
-          <div className="mb-4">
-            <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
-              <Avatar
-                size={48}
-                icon={<UserOutlined />}
-                className="bg-blue-500"
-              />
-              <div>
-                <div className="font-semibold text-lg">
-                  {selectedStaff.fullName}
-                </div>
-                <div className="text-xs text-gray-400">
-                  {selectedStaff.email}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <Form form={assignForm} layout="vertical">
-          <Form.Item
-            name="stationCode"
-            label="Assign to Station"
-            rules={[{ required: true, message: "Please select a station" }]}
-          >
-            <Select
-              placeholder="Select a station"
-              loading={stationsLoading}
-              showSearch
-              allowClear
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                Boolean(
-                  option?.label
-                    ?.toString()
-                    .toLowerCase()
-                    .includes(input.toLowerCase()) ||
-                    option?.value
-                      ?.toString()
-                      .toLowerCase()
-                      .includes(input.toLowerCase())
-                )
-              }
-            >
-              {stations?.map((station) => (
-                <Option key={station.code} value={station.code}>
-                  <div className="flex items-center justify-between">
-                    <span>
-                      <strong>{station.code}</strong> - {station.name}
-                    </span>
-                    <Tag color="blue">{station.status}</Tag>
-                  </div>
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
-
-          <div className="bg-blue-50 p-3 rounded text-sm text-blue-700">
-            <ExclamationCircleOutlined className="mr-2" />
-            Assigning this staff member to a station will update their current
-            assignment. Only operational stations are shown.
-          </div>
-        </Form>
-      </Modal>
     </div>
   );
 };

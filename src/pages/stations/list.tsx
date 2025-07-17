@@ -11,6 +11,7 @@ import {
   Pagination,
   Tooltip,
 } from "antd";
+import type { SortOrder } from "antd/es/table/interface";
 import {
   SearchOutlined,
   EnvironmentOutlined,
@@ -22,9 +23,11 @@ import {
   StationDto,
   StationStatus,
   StationFilter,
+  SortDirection,
 } from "../../data/interfaces";
 import { useStations } from "../../hooks";
 import { formatDate } from "../../utils/formatDate";
+import {usePermissions} from "@refinedev/core";
 
 const { Option } = Select;
 
@@ -32,8 +35,12 @@ export const StationList: React.FC = () => {
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
   const [filters, setFilters] = useState<StationFilter>({});
+  const [sort, setSort] = useState<Record<string, SortDirection>>({
+    createdAt: SortDirection.DESC
+  });
+  const perm = usePermissions();
 
-  const { data, isLoading, error } = useStations(page, size, filters);
+  const { data, isLoading, error } = useStations(page, size, sort, filters);
 
   const handleSearch = (value: string) => {
     setFilters({ ...filters, name: value });
@@ -48,6 +55,34 @@ export const StationList: React.FC = () => {
   const handleLineFilter = (lineCode: string | undefined) => {
     setFilters({ ...filters, lineCode });
     setPage(0);
+  };
+
+  // Handle table changes including sorting
+  const handleTableChange = (pagination: any, filters: any, sorter: any) => {
+    const newSort: Record<string, SortDirection> = {};
+    
+    // Handle multiple column sorting
+    if (Array.isArray(sorter)) {
+      sorter.forEach((s) => {
+        if (s.field && s.order) {
+          newSort[s.field] = s.order === 'ascend' ? SortDirection.ASC : SortDirection.DESC;
+        }
+      });
+    } else if (sorter.field && sorter.order) {
+      // Handle single column sorting
+      newSort[sorter.field] = sorter.order === 'ascend' ? SortDirection.ASC : SortDirection.DESC;
+    }
+    
+    setSort(Object.keys(newSort).length > 0 ? newSort : { createdAt: SortDirection.DESC });
+  };
+
+  // Convert sort state to antd sorter format for controlled sorting
+  const getSorterProps = (field: string) => {
+    const sortDirection = sort?.[field];
+    return {
+      sorter: true,
+      sortOrder: sortDirection ? (sortDirection === SortDirection.ASC ? 'ascend' : 'descend') as SortOrder : undefined,
+    };
   };
 
   const stations = data?.content || [];
@@ -88,12 +123,14 @@ export const StationList: React.FC = () => {
       render: (code: string) => (
         <span className="font-mono font-semibold">{code}</span>
       ),
+      ...getSorterProps('code'),
     },
     {
       title: "Name",
       dataIndex: "name",
       key: "name",
       render: (name: string) => <span className="font-medium">{name}</span>,
+      ...getSorterProps('name'),
     },
     {
       title: "Address",
@@ -105,6 +142,7 @@ export const StationList: React.FC = () => {
           <span className="text-gray-600">{address}</span>
         </Tooltip>
       ),
+      ...getSorterProps('address'),
     },
     {
       title: "Status",
@@ -116,6 +154,7 @@ export const StationList: React.FC = () => {
           {status.replace("_", " ")}
         </Tag>
       ),
+      ...getSorterProps('status'),
     },
     {
       title: "Metro Lines",
@@ -143,6 +182,7 @@ export const StationList: React.FC = () => {
       render: (date: string) => (
         <span className="text-xs text-gray-500">{formatDate(date)}</span>
       ),
+      ...getSorterProps('createdAt'),
     },
     {
       title: "Actions",
@@ -156,12 +196,12 @@ export const StationList: React.FC = () => {
             recordItemId={record.code}
             className="text-blue-600"
           />
-          <EditButton
+          {perm.data == "ADMIN" && <EditButton
             hideText
             size="small"
             recordItemId={record.code}
             className="text-green-600"
-          />
+          />}
         </Space>
       ),
     },
@@ -176,7 +216,7 @@ export const StationList: React.FC = () => {
             <span className="text-xl font-semibold">Metro Stations</span>
           </div>
         }
-        extra={<CreateButton />}
+        extra={perm.data == "ADMIN" && <CreateButton />}
         className="shadow-sm"
       >
         <Space direction="vertical" size="middle" className="w-full">
@@ -258,6 +298,7 @@ export const StationList: React.FC = () => {
             rowKey="id"
             loading={isLoading}
             pagination={false}
+            onChange={handleTableChange}
             className="bg-white rounded-lg shadow-sm"
             size="middle"
           />

@@ -23,12 +23,10 @@ export const OrderEdit: React.FC = () => {
   useEffect(() => {
     if (order) {
       form.setFieldsValue({
-        orderNumber: order.orderNumber,
         status: order.status,
         paymentMethod: order.paymentMethod,
-        paymentStatus: order.paymentStatus,
-        paymentReference: order.paymentReference,
-        notes: order.notes,
+        paymentStatus: order.status,
+        paymentReference: order.transactionReference,
       });
     }
   }, [order, form]);
