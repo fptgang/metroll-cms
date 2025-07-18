@@ -53,6 +53,7 @@ import { AccountList } from "./pages/accounts/list";
 import { AccountCreate } from "./pages/accounts/create";
 import { AccountEdit } from "./pages/accounts/edit";
 import { AccountShow } from "./pages/accounts/show";
+import { AccountAssignStation } from "./pages/accounts/assign-station";
 import { TicketList } from "./pages/tickets/list";
 import { TicketCreate } from "./pages/tickets/create";
 import { VoucherList } from "./pages/vouchers/list";
@@ -315,6 +316,7 @@ function InnerApp({ isAuthenticated }: InnerAppProps) {
                 <Route path="create" element={<AccountCreate />} />
                 <Route path="edit/:id" element={<AccountEdit />} />
                 <Route path="show/:id" element={<AccountShow />} />
+                <Route path="assign-station/:id" element={<AccountAssignStation />} />
               </Route>
 
               {/* Ticket Routes */}
