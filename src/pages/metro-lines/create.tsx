@@ -332,8 +332,9 @@ export const MetroLineCreate: React.FC = () => {
           <div className="mt-6">
             <Form.Item
               name="description"
-              label="Description (Optional)"
+              label="Description"
               rules={[
+                { required: true, message: "Description is required" },
                 {
                   max: 1000,
                   message: "Description must be 1000 characters or less",
@@ -342,7 +343,7 @@ export const MetroLineCreate: React.FC = () => {
             >
               <TextArea
                 rows={3}
-                placeholder="Additional information about the metro line..."
+                placeholder="Enter a description for the metro line..."
               />
             </Form.Item>
           </div>
