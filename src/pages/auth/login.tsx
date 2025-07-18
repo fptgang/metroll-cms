@@ -73,10 +73,6 @@ export const FirebaseLoginPage: React.FC = () => {
 
         <Form
           name="login"
-          initialValues={{
-            email: "admin@metroll.com",
-            password: "password123",
-          }}
           onFinish={onFinish}
           layout="vertical"
           requiredMark={false}
@@ -128,34 +124,6 @@ export const FirebaseLoginPage: React.FC = () => {
             </Button>
           </Form.Item>
         </Form>
-
-        <Divider style={{ margin: "24px 0" }}>
-          <Text type="secondary">or</Text>
-        </Divider>
-
-        <Button
-          icon={<GoogleOutlined />}
-          onClick={handleGoogleLogin}
-          loading={googleLoading}
-          size="large"
-          block
-          style={{
-            borderRadius: "8px",
-            fontWeight: 600,
-            background: "#ffffff",
-            border: "1px solid #dadce0",
-            color: "#3c4043",
-            marginBottom: "24px",
-          }}
-        >
-          Continue with Google
-        </Button>
-
-        <div style={{ textAlign: "center" }}>
-          <Text type="secondary" style={{ fontSize: "12px" }}>
-            Powered by Firebase Authentication
-          </Text>
-        </div>
       </Card>
     </div>
   );

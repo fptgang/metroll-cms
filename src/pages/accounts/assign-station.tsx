@@ -91,7 +91,9 @@ export const AccountAssignStation: React.FC = () => {
             }
             onChange={setSelectedStation}
           >
-            {stations.map((station) => (
+            {stations
+                .filter(station => station.status === "OPERATIONAL")
+                .map((station) => (
               <Select.Option key={station.code} value={station.code}>
                 {station.name} ({station.code})
               </Select.Option>

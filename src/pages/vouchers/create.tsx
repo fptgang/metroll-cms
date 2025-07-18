@@ -103,7 +103,8 @@ export const VoucherCreate: React.FC = () => {
                 )
               }
               options={
-                accountsData?.content?.map((account) => ({
+                accountsData?.content?.filter(account => account.role === "CUSTOMER" && account.active)
+                .map((account) => ({
                   label: `${account.fullName} (${account.email})`,
                   value: account.id,
                 })) || []
