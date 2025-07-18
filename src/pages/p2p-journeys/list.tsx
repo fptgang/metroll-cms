@@ -2,15 +2,15 @@ import React, { useState } from "react";
 import {
   EditButton,
   ShowButton,
-  DeleteButton,
   CreateButton,
 } from "@refinedev/antd";
-import { Table, Space, Card, Input, Pagination } from "antd";
+import { Table, Space, Card, Input, Pagination, Button, Popconfirm } from "antd";
 import type { SortOrder } from "antd/es/table/interface";
 import {
   SearchOutlined,
   DollarOutlined,
   ClockCircleOutlined,
+  DeleteOutlined,
 } from "@ant-design/icons";
 import { P2PJourneyDto, SortDirection } from "../../data";
 import { useP2PJourneys, useDeleteP2PJourney } from "../../hooks";
@@ -143,12 +143,22 @@ export const P2PJourneyList: React.FC = () => {
               <Space>
                 <ShowButton hideText size="small" recordItemId={record.id} />
                 {perm.data == "ADMIN" && <EditButton hideText size="small" recordItemId={record.id} />} 
-                {perm.data == "ADMIN" && <DeleteButton
-                  hideText
-                  size="small"
-                  recordItemId={record.id}
-                  onSuccess={() => handleDelete(record.id)}
-                />}
+                {perm.data == "ADMIN" && (
+                  <Popconfirm
+                    title="Delete P2P Journey"
+                    description="Are you sure you want to delete this P2P journey?"
+                    onConfirm={() => handleDelete(record.id)}
+                    okText="Yes"
+                    cancelText="No"
+                  >
+                    <Button
+                      danger
+                      size="small"
+                      icon={<DeleteOutlined />}
+                      loading={deleteMutation.isPending}
+                    />
+                  </Popconfirm>
+                )}
               </Space>
             )}
           />

@@ -2,6 +2,7 @@ import React from "react";
 import { Create, useForm } from "@refinedev/antd";
 import { Form, Select, Card, Space, Button, InputNumber, Alert, Typography, message } from "antd";
 import { ShoppingCartOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
+import { useNavigate } from "react-router";
 import {
   CheckoutRequest,
   CheckoutItemRequest,
@@ -16,6 +17,7 @@ import { useOperationalStations } from "../../hooks/useStations";
 const { Title, Text } = Typography;
 
 export const OrderCreate: React.FC = () => {
+  const navigate = useNavigate();
   const checkoutMutation = useOrderCheckout();
   const { data: p2pJourneysData, isLoading: isLoadingJourneys } = useP2PJourneys(
     0, 
@@ -85,6 +87,9 @@ export const OrderCreate: React.FC = () => {
       
       // Reset form after successful submission
       form.resetFields();
+      
+      // Navigate back to orders list
+      navigate("/orders");
     } catch (error) {
       console.error("Order processing failed:", error);
       message.error("Failed to process order. Please try again.");

@@ -14,6 +14,7 @@ import {
   Tag,
   Alert,
   Spin,
+  ColorPicker,
 } from "antd";
 import {
   SaveOutlined,
@@ -43,10 +44,9 @@ export const MetroLineEdit: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [segments, setSegments] = useState<SegmentRequest[]>([]);
   const [segmentModalVisible, setSegmentModalVisible] = useState(false);
-  const [editingSegment, setEditingSegment] = useState<SegmentRequest | null>(
-    null
-  );
+
   const [segmentForm] = Form.useForm();
+  const [selectedColor, setSelectedColor] = useState<string>('#1890ff');
 
   const { data: metroLine, isLoading, error } = useMetroLine(id || "");
   const updateMetroLine = useUpdateMetroLine();
@@ -64,6 +64,7 @@ export const MetroLineEdit: React.FC = () => {
         status: metroLine.status,
         description: metroLine.description,
       });
+      setSelectedColor(metroLine.color || '#1890ff');
       if (metroLine.segments) {
         const segmentsReq: SegmentRequest[] = metroLine.segments.map(
           (segment) => ({
@@ -115,7 +116,6 @@ export const MetroLineEdit: React.FC = () => {
   };
 
   const handleAddSegment = () => {
-    setEditingSegment(null);
     segmentForm.resetFields();
 
     // If there are existing segments, set the start station to the end station of the last segment
@@ -129,28 +129,37 @@ export const MetroLineEdit: React.FC = () => {
     setSegmentModalVisible(true);
   };
 
-  const handleEditSegment = (segment: SegmentRequest) => {
-    setEditingSegment(segment);
-    segmentForm.setFieldsValue(segment);
-    setSegmentModalVisible(true);
-  };
-
   const handleDeleteSegment = (index: number) => {
+    const segmentToDelete = segments[index];
     const newSegments = segments.filter((_, i) => i !== index);
+    
+    // If there are segments after the deleted one, update the next segment's start station
+    if (index < segments.length - 1) {
+      const nextSegmentIndex = 0; // After filtering, the next segment will be at the current index
+      const prevSegment = index > 0 ? segments[index - 1] : null;
+      
+      if (prevSegment && newSegments[index]) {
+        // Update the next segment's start station to connect with the previous segment
+        newSegments[index] = {
+          ...newSegments[index],
+          startStationCode: prevSegment.endStationCode,
+        };
+      }
+    }
+    
     // Reorder sequence numbers
     const reorderedSegments = newSegments.map((segment, i) => ({
       ...segment,
       sequence: i + 1,
     }));
+    
     setSegments(reorderedSegments);
   };
 
   const handleSegmentModalOk = () => {
     segmentForm.validateFields().then((values) => {
       const newSegment: SegmentRequest = {
-        sequence: editingSegment
-          ? editingSegment.sequence
-          : segments.length + 1,
+        sequence: segments.length + 1,
         distance: values.distance,
         travelTime: values.travelTime,
         description: values.description,
@@ -158,17 +167,7 @@ export const MetroLineEdit: React.FC = () => {
         endStationCode: values.endStationCode,
       };
 
-      if (editingSegment) {
-        const index = segments.findIndex(
-          (s) => s.sequence === editingSegment.sequence
-        );
-        const newSegments = [...segments];
-        newSegments[index] = newSegment;
-        setSegments(newSegments);
-      } else {
-        setSegments([...segments, newSegment]);
-      }
-
+      setSegments([...segments, newSegment]);
       setSegmentModalVisible(false);
       segmentForm.resetFields();
     });
@@ -221,21 +220,15 @@ export const MetroLineEdit: React.FC = () => {
     {
       title: "Actions",
       key: "actions",
-      width: 100,
+      width: 80,
       render: (_: any, record: SegmentRequest, index: number) => (
-        <Space size="small">
-          <Button
-            size="small"
-            icon={<EditOutlined />}
-            onClick={() => handleEditSegment(record)}
-          />
-          <Button
-            size="small"
-            danger
-            icon={<DeleteOutlined />}
-            onClick={() => handleDeleteSegment(index)}
-          />
-        </Space>
+        <Button
+          size="small"
+          danger
+          icon={<DeleteOutlined />}
+          onClick={() => handleDeleteSegment(index)}
+          title="Delete segment"
+        />
       ),
     },
   ];
@@ -299,20 +292,12 @@ export const MetroLineEdit: React.FC = () => {
               <Form.Item
                 name="code"
                 label="Line Code"
-                rules={[
-                  { required: true, message: "Line code is required" },
-                  { max: 10, message: "Code must be 10 characters or less" },
-                  {
-                    pattern: /^[A-Z0-9]+$/,
-                    message:
-                      "Code must contain only uppercase letters and numbers",
-                  },
-                ]}
               >
                 <Input
                   placeholder="e.g., RED, L001, BLUE"
                   className="font-mono"
                   style={{ textTransform: "uppercase" }}
+                  disabled
                 />
               </Form.Item>
 
@@ -332,9 +317,32 @@ export const MetroLineEdit: React.FC = () => {
                 label="Line Color"
                 rules={[{ required: true, message: "Line color is required" }]}
               >
-                <Input
-                  placeholder="e.g., BLUE, RED,..."
-                  className="font-mono"
+                <ColorPicker
+                  showText
+                  format="hex"
+                  value={selectedColor}
+                  onChange={(color) => {
+                    const hexColor = color?.toHexString() || '#1890ff';
+                    setSelectedColor(hexColor);
+                    form.setFieldValue('color', hexColor);
+                  }}
+                  presets={[
+                    {
+                      label: 'Common Colors',
+                      colors: [
+                        '#1890ff', // Blue
+                        '#52c41a', // Green
+                        '#faad14', // Yellow
+                        '#f5222d', // Red
+                        '#722ed1', // Purple
+                        '#13c2c2', // Cyan
+                        '#fa8c16', // Orange
+                        '#eb2f96', // Magenta
+                        '#000000', // Black
+                        '#666666', // Gray
+                      ],
+                    },
+                  ]}
                 />
               </Form.Item>
             </div>
@@ -393,14 +401,19 @@ export const MetroLineEdit: React.FC = () => {
           {/* Segments Section */}
           <div className="mt-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-medium text-gray-900">
-                Line Segments
-              </h3>
+              <div>
+                <h3 className="text-lg font-medium text-gray-900">
+                  Line Segments
+                </h3>
+                <p className="text-sm text-gray-500 mt-1">
+                  Segments form a continuous path. To modify a segment, delete it and all following segments, then recreate them.
+                </p>
+              </div>
               <Button
                 type="primary"
                 icon={<PlusOutlined />}
                 onClick={handleAddSegment}
-                disabled={stationsLoading}
+                disabled={!!stationsLoading}
               >
                 Add Segment
               </Button>
@@ -479,29 +492,38 @@ export const MetroLineEdit: React.FC = () => {
 
       {/* Segment Modal */}
       <Modal
-        title={editingSegment ? "Edit Segment" : "Add Segment"}
+        title="Add Segment"
         open={segmentModalVisible}
         onOk={handleSegmentModalOk}
         onCancel={() => setSegmentModalVisible(false)}
         width={600}
       >
+        {segments.length > 0 && (
+          <Alert
+            message="Continuous Path"
+            description="This segment will continue from the previous segment's end station. Each segment must connect seamlessly to form a complete metro line."
+            type="info"
+            showIcon
+            className="mb-4"
+          />
+        )}
         <Form form={segmentForm} layout="vertical">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Form.Item
               name="startStationCode"
               label="Start Station"
               rules={[{ required: true, message: "Start station is required" }]}
-              // help={
-              //   !editingSegment && segments.length > 0
-              //     ? "Start station is automatically set to continue from the previous segment"
-              //     : undefined
-              // }
+              help={
+                segments.length > 0
+                  ? "Start station is automatically set to continue from the previous segment"
+                  : "Select the starting station for this segment"
+              }
             >
               <Select
                 placeholder="Select start station"
                 loading={stationsLoading}
                 showSearch
-                disabled={!editingSegment && segments.length > 0}
+                disabled={segments.length > 0}
               >
                 {stations.map((station) => (
                   <Option key={station.code} value={station.code}>
@@ -514,7 +536,6 @@ export const MetroLineEdit: React.FC = () => {
             <Form.Item
               name="endStationCode"
               label="End Station"
-              // help="Only stations not already used in other segments are shown"
               rules={[
                 { required: true, message: "End station is required" },
                 ({ getFieldValue }) => ({
@@ -532,6 +553,7 @@ export const MetroLineEdit: React.FC = () => {
                 }),
               ]}
               dependencies={["startStationCode"]}
+              help="Select a station that hasn't been used in other segments"
             >
               <Select
                 placeholder="Select end station"
@@ -543,22 +565,17 @@ export const MetroLineEdit: React.FC = () => {
                     const startStation =
                       segmentForm.getFieldValue("startStationCode");
 
-                    // Get used stations, excluding the current segment being edited
-                    const usedStations = new Set(
-                      segments
-                        .filter(
-                          (s) =>
-                            !editingSegment ||
-                            s.sequence !== editingSegment.sequence
-                        )
-                        .flatMap((s) => [s.startStationCode, s.endStationCode])
-                    );
+                    // Exclude start station
+                    if (station.code === startStation) {
+                      return false;
+                    }
 
-                    // Exclude start station and already used stations
-                    return (
-                      station.code !== startStation &&
-                      !usedStations.has(station.code)
+                    // Exclude already used stations
+                    const usedStations = new Set(
+                      segments.flatMap((s) => [s.startStationCode, s.endStationCode])
                     );
+                    
+                    return !usedStations.has(station.code);
                   })
                   .map((station) => (
                     <Option key={station.code} value={station.code}>

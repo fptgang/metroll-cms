@@ -38,7 +38,9 @@ const { Option } = Select;
 export const MetroLineList: React.FC = () => {
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
-  const [filters, setFilters] = useState<MetroLineFilter>({});
+  const [filters, setFilters] = useState<MetroLineFilter>({
+    status: LineStatus.OPERATIONAL,
+  });
   const [sort, setSort] = useState<Record<string, SortDirection>>({
     createdAt: SortDirection.DESC,
   });
@@ -232,8 +234,8 @@ export const MetroLineList: React.FC = () => {
             />
 
             <Select
-              placeholder="Filter by status"
-              allowClear
+              placeholder="Status (Required)"
+              value={filters.status}
               className="min-w-40"
               onChange={handleStatusFilter}
             >

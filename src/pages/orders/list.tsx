@@ -260,7 +260,7 @@ export const OrderList: React.FC = () => {
                 allowClear
               />
 
-              <Select
+              {/* <Select
                 placeholder="Status"
                 style={{ width: 140 }}
                 allowClear
@@ -309,10 +309,10 @@ export const OrderList: React.FC = () => {
                     {paymentMethodConfig[method].text}
                   </Select.Option>
                 ))}
-              </Select>
+              </Select> */}
             </Space>
 
-            <Space>
+            {/* <Space>
               <RangePicker
                 placeholder={["Start Date", "End Date"]}
                 onChange={(dates) => {
@@ -331,11 +331,11 @@ export const OrderList: React.FC = () => {
                   }
                 }}
               />
-            </Space>
+            </Space> */}
           </Space>
 
           {/* Amount Range Filter */}
-          <Space className="mt-4" wrap>
+          {/* <Space className="mt-4" wrap>
             <Text>Amount Range:</Text>
             <InputNumber
               placeholder="Min Amount"
@@ -374,7 +374,7 @@ export const OrderList: React.FC = () => {
             >
               Apply Filters
             </Button>
-          </Space>
+          </Space> */}
         </Card>
 
         {/* Orders Table */}
@@ -418,24 +418,11 @@ export const OrderList: React.FC = () => {
             render={(value: string) => {
               return (
                 <Text>
-                  {value}
+                  {value || '-'}
                 </Text>
               );
             }}
             {...getSorterProps('customer.fullName')}
-          />
-
-          <Table.Column
-            dataIndex={["staff", "fullName"]}
-            title="Staff"
-            render={(value: string) => {
-              return (
-                <Text>
-                  {value}
-                </Text>
-              );
-            }}
-            {...getSorterProps('staff.fullName')}
           />
 
           <Table.Column

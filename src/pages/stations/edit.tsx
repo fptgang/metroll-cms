@@ -134,7 +134,7 @@ export const StationEdit: React.FC = () => {
                   { required: true, message: "Station code is required" },
                   { max: 10, message: "Code must be 10 characters or less" },
                   {
-                    pattern: /^[A-Z0-9]+$/,
+                    pattern: /^[A-Z0-9_]+$/,
                     message:
                       "Code must contain only uppercase letters and numbers",
                   },
