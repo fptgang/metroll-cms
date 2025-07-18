@@ -86,21 +86,6 @@ export const DiscountPackageShow: React.FC = () => {
           {formatDate(discountPackage.updatedAt || "")}
         </Descriptions.Item>
       </Descriptions>
-
-      <div style={{ marginTop: "24px", textAlign: "center" }}>
-        <Button
-          type="primary"
-          icon={<EditOutlined />}
-          onClick={() => {
-            if (id) {
-              navigate(`/discount-packages/edit/${id}`);
-            }
-          }}
-          disabled={discountPackage.status !== "ACTIVE"}
-        >
-          Edit Package
-        </Button>
-      </div>
     </Card>
   );
 };

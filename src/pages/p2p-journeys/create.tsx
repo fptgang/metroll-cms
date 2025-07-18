@@ -71,7 +71,7 @@ export const P2PJourneyCreate: React.FC = () => {
               }
             >
               {stations?.map((station) => (
-                <Select.Option key={station.id} value={station.id}>
+                <Select.Option key={station.id} value={station.code}>
                   {station.name} ({station.code})
                 </Select.Option>
               ))}
@@ -100,7 +100,7 @@ export const P2PJourneyCreate: React.FC = () => {
               }
             >
               {stations?.map((station) => (
-                <Select.Option key={station.id} value={station.id}>
+                <Select.Option key={station.id} value={station.code}>
                   {station.name} ({station.code})
                 </Select.Option>
               ))}

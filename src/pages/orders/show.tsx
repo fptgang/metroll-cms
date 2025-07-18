@@ -370,7 +370,10 @@ export const OrderShow: React.FC = () => {
                           <div>
                             {p2pTickets.find(
                               (ticket) => ticket.id === orderDetail.p2pJourney
-                            )?.startStationId}
+                            )?.startStationId}{" - "}
+                            {p2pTickets.find(
+                              (ticket) => ticket.id === orderDetail.p2pJourney
+                            )?.endStationId}
                           </div>
                         ) : orderDetail.ticketType === "TIMED" ? (
                           <div>

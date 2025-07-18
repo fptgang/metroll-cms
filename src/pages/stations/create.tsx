@@ -90,7 +90,7 @@ export const StationCreate: React.FC = () => {
                   { required: true, message: "Station code is required" },
                   { max: 10, message: "Code must be 10 characters or less" },
                   {
-                    pattern: /^[A-Za-z0-9_]+$/,
+                    pattern: /^[A-Z0-9_]+$/,
                     message:
                       "Code must contain only uppercase letters and numbers",
                   },
@@ -123,10 +123,6 @@ export const StationCreate: React.FC = () => {
                   <Option value={StationStatus.OPERATIONAL}>
                     🟢 Operational
                   </Option>
-                  <Option value={StationStatus.UNDER_MAINTENANCE}>
-                    🟡 Under Maintenance
-                  </Option>
-                  <Option value={StationStatus.CLOSED}>🔴 Closed</Option>
                 </Select>
               </Form.Item>
             </div>
