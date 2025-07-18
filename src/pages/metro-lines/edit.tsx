@@ -97,7 +97,7 @@ export const MetroLineEdit: React.FC = () => {
         color: values.color,
         operatingHours: values.operatingHours,
         status: values.status || LineStatus.PLANNED,
-        description: values.description || "",
+        description: values.description,
         segments: segments,
       };
 
@@ -381,8 +381,9 @@ export const MetroLineEdit: React.FC = () => {
           <div className="mt-6">
             <Form.Item
               name="description"
-              label="Description (Optional)"
+              label="Description"
               rules={[
+                { required: true, message: "Description is required" },
                 {
                   max: 1000,
                   message: "Description must be 1000 characters or less",
@@ -391,7 +392,7 @@ export const MetroLineEdit: React.FC = () => {
             >
               <TextArea
                 rows={3}
-                placeholder="Additional information about the metro line..."
+                placeholder="Enter a description for the metro line..."
               />
             </Form.Item>
           </div>
