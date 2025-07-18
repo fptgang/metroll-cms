@@ -5,6 +5,7 @@ import {
   DeleteButton,
   CreateButton,
 } from "@refinedev/antd";
+import { useNavigate } from "react-router";
 import {
   Table,
   Space,
@@ -24,6 +25,7 @@ import {
   GiftOutlined,
   DeleteOutlined,
   CheckCircleOutlined,
+  EnvironmentOutlined,
 } from "@ant-design/icons";
 import {AccountDto, AccountRole, SortDirection} from "../../data";
 import {
@@ -40,6 +42,7 @@ export const AccountList: React.FC = () => {
   const [size, setSize] = useState(10);
   const [searchQuery, setSearchQuery] = useState("");
   const perm = usePermissions();
+  const navigate = useNavigate();
   const [sort, setSort] = useState<Record<string, SortDirection>>({
     createdAt: SortDirection.DESC
   });
@@ -192,6 +195,17 @@ export const AccountList: React.FC = () => {
               <Space>
                 <ShowButton hideText size="small" recordItemId={record.id} />
                 {record.active && <EditButton hideText size="small" recordItemId={record.id} />}
+                {
+                  (perm.data === "ADMIN" && record.role === AccountRole.STAFF) && 
+                    <Tooltip title="Assign Station">
+                      <Button
+                        type="text"
+                        size="small"
+                        icon={<EnvironmentOutlined />}
+                        onClick={() => navigate(`/accounts/assign-station/${record.id}`)}
+                      />
+                    </Tooltip>
+                }
                 {
                   (perm.data === "ADMIN" && record.active) && 
                     <Popconfirm
