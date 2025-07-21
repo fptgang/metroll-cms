@@ -1,6 +1,15 @@
 import React, { useState } from "react";
 import { Create } from "@refinedev/antd";
-import { Form, Input, InputNumber, Card, Select, Checkbox, Space, message } from "antd";
+import {
+  Form,
+  Input,
+  InputNumber,
+  Card,
+  Select,
+  Checkbox,
+  Space,
+  message,
+} from "antd";
 import { P2PJourneyCreateRequest } from "../../data";
 import { useCreateP2PJourney } from "../../hooks";
 import { useOperationalStations } from "../../hooks/useStations";
@@ -11,15 +20,16 @@ export const P2PJourneyCreate: React.FC = () => {
   const [createReverse, setCreateReverse] = useState(false);
   const createMutation = useCreateP2PJourney();
   const navigate = useNavigate();
-  
+
   // Get operational stations for the dropdowns
-  const { data: stations, isLoading: stationsLoading } = useOperationalStations();
+  const { data: stations, isLoading: stationsLoading } =
+    useOperationalStations();
 
   const onFinish = async (values: P2PJourneyCreateRequest) => {
     try {
       // Create the main journey
       await createMutation.mutateAsync(values);
-      
+
       // Create reverse journey if checkbox is checked
       if (createReverse) {
         const reverseJourney: P2PJourneyCreateRequest = {
@@ -29,11 +39,11 @@ export const P2PJourneyCreate: React.FC = () => {
           distance: values.distance,
           travelTime: values.travelTime,
         };
-        
+
         await createMutation.mutateAsync(reverseJourney);
         message.success("Both journeys created successfully!");
       }
-      
+
       navigate("/p2p-journeys");
     } catch (error) {
       // Error handling is done by the mutation
@@ -64,11 +74,6 @@ export const P2PJourneyCreate: React.FC = () => {
               loading={stationsLoading}
               showSearch
               optionFilterProp="children"
-              filterOption={(input, option) =>
-                (option?.children as unknown as string)
-                  ?.toLowerCase()
-                  .includes(input.toLowerCase())
-              }
             >
               {stations?.map((station) => (
                 <Select.Option key={station.id} value={station.code}>
@@ -126,9 +131,9 @@ export const P2PJourneyCreate: React.FC = () => {
               style={{ width: "100%" }}
               placeholder="Enter base price"
               formatter={(value) =>
-                `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                `₫ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
               }
-              parser={(value) => value!.replace(/\$\s?|(,*)/g, "")}
+              parser={(value) => value!.replace(/\₫\s?|(,*)/g, "")}
             />
           </Form.Item>
 
@@ -178,7 +183,7 @@ export const P2PJourneyCreate: React.FC = () => {
           </Form.Item>
 
           <Form.Item>
-            <Checkbox 
+            <Checkbox
               checked={createReverse}
               onChange={(e) => setCreateReverse(e.target.checked)}
             >
