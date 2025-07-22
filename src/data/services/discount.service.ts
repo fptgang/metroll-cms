@@ -87,10 +87,35 @@ export class DiscountService extends BaseService {
   async assignDiscountPackage(
     data: AccountDiscountAssignRequest
   ): Promise<AccountDiscountPackageDto> {
-    return this.post<AccountDiscountPackageDto>(
-      "/account-discount-packages/assign",
-      data
-    );
+    // Create FormData for multipart upload
+    const formData = new FormData();
+    formData.append('accountId', data.accountId);
+    formData.append('discountPackageId', data.discountPackageId);
+    
+    if (data.document) {
+      formData.append('document', data.document);
+    }
+
+    // Get Firebase auth token
+    const { auth } = await import("../../utils/firebase");
+    const user = auth.currentUser;
+    const token = user ? await user.getIdToken() : null;
+
+    const response = await fetch(`${this.baseUrl}/account-discount-packages/assign`, {
+      method: 'POST',
+      headers: {
+        ...(token && { 'Authorization': `Bearer ${token}` }),
+        // Don't set Content-Type header - browser will set it with boundary for FormData
+      },
+      body: formData
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw errorData;
+    }
+
+    return response.json();
   }
 
   // Unassign discount package from account

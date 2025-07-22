@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate, useParams } from "react-router";
-import { Card, Descriptions, Tag, Button, Spin } from "antd";
+import { Card, Descriptions, Tag, Button, Spin, Image, Typography } from "antd";
 import { ArrowLeftOutlined, EditOutlined } from "@ant-design/icons";
 import { useAccountDiscountPackage, useDiscountPackage } from "../../hooks";
 import { formatDate } from "../../utils/formatDate";
@@ -108,6 +108,19 @@ export const AccountDiscountPackageShow: React.FC = () => {
           >
             {accountDiscountPackage.status}
           </Tag>
+        </Descriptions.Item>
+
+        <Descriptions.Item label="Proof Image">
+          {accountDiscountPackage.documentUrl ? (
+            <Image
+              width={200}
+              src={accountDiscountPackage.documentUrl}
+              alt="Proof document"
+              style={{ maxWidth: "100%", height: "auto" }}
+            />
+          ) : (
+            <Typography.Text type="secondary">No image</Typography.Text>
+          )}
         </Descriptions.Item>
 
         <Descriptions.Item label="Created At">

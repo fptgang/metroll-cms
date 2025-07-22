@@ -15,6 +15,7 @@ export interface AccountDiscountPackageDto extends BaseEntity {
   accountId: string;
   account: AccountDto;
   discountPackageId: string;
+  documentUrl?: string;
   activateDate: string;
   validUntil: string;
   status: "ACTIVATED" | "EXPIRED" | "CANCELLED";
@@ -40,6 +41,7 @@ export interface DiscountPackageUpdateRequest {
 export interface AccountDiscountAssignRequest {
   accountId: string;
   discountPackageId: string;
+  document?: File; // Added for proof image upload
 }
 
 // Discount Package Filter Options
