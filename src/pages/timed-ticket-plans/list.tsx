@@ -5,15 +5,29 @@ import {
   DeleteButton,
   CreateButton,
 } from "@refinedev/antd";
-import { Table, Space, Card, Input, Pagination } from "antd";
+import {
+  Table,
+  Space,
+  Card,
+  Input,
+  Pagination,
+  Popconfirm,
+  Button,
+} from "antd";
 import type { SortOrder } from "antd/es/table/interface";
 import {
   SearchOutlined,
   DollarOutlined,
   ClockCircleOutlined,
+  DeleteOutlined,
+  CheckCircleOutlined,
 } from "@ant-design/icons";
 import { TimedTicketPlanDto, SortDirection } from "../../data";
-import { useTimedTicketPlans, useDeleteTimedTicketPlan } from "../../hooks";
+import {
+  useTimedTicketPlans,
+  useDeactivateTimedTicketPlan,
+  useActivateTimedTicketPlan,
+} from "../../hooks";
 import { formatDate } from "../../utils/formatDate";
 import { usePermissions } from "@refinedev/core";
 
@@ -22,37 +36,46 @@ export const TimedTicketPlanList: React.FC = () => {
   const [size, setSize] = useState(10);
   const [searchQuery, setSearchQuery] = useState("");
   const [sort, setSort] = useState<Record<string, SortDirection>>({
-    createdAt: SortDirection.DESC
+    createdAt: SortDirection.DESC,
   });
-  
+
   const perm = usePermissions();
 
   const { data, isLoading } = useTimedTicketPlans(page, size, sort, {
-    search: searchQuery
+    search: searchQuery,
   });
-  const deleteMutation = useDeleteTimedTicketPlan();
-
+  const deactivateMutation = useDeactivateTimedTicketPlan();
+  const activateMutation = useActivateTimedTicketPlan();
+  const handleActivate = (id: string) => {
+    activateMutation.mutate(id);
+  };
   const handleDelete = (id: string) => {
-    deleteMutation.mutate(id);
+    deactivateMutation.mutate(id);
   };
 
   // Handle table changes including sorting
   const handleTableChange = (pagination: any, filters: any, sorter: any) => {
     const newSort: Record<string, SortDirection> = {};
-    
+
     // Handle multiple column sorting
     if (Array.isArray(sorter)) {
       sorter.forEach((s) => {
         if (s.field && s.order) {
-          newSort[s.field] = s.order === 'ascend' ? SortDirection.ASC : SortDirection.DESC;
+          newSort[s.field] =
+            s.order === "ascend" ? SortDirection.ASC : SortDirection.DESC;
         }
       });
     } else if (sorter.field && sorter.order) {
       // Handle single column sorting
-      newSort[sorter.field] = sorter.order === 'ascend' ? SortDirection.ASC : SortDirection.DESC;
+      newSort[sorter.field] =
+        sorter.order === "ascend" ? SortDirection.ASC : SortDirection.DESC;
     }
-    
-    setSort(Object.keys(newSort).length > 0 ? newSort : { createdAt: SortDirection.DESC });
+
+    setSort(
+      Object.keys(newSort).length > 0
+        ? newSort
+        : { createdAt: SortDirection.DESC }
+    );
   };
 
   // Convert sort state to antd sorter format for controlled sorting
@@ -60,7 +83,11 @@ export const TimedTicketPlanList: React.FC = () => {
     const sortDirection = sort?.[field];
     return {
       sorter: true,
-      sortOrder: sortDirection ? (sortDirection === SortDirection.ASC ? 'ascend' : 'descend') as SortOrder : undefined,
+      sortOrder: sortDirection
+        ? ((sortDirection === SortDirection.ASC
+            ? "ascend"
+            : "descend") as SortOrder)
+        : undefined,
     };
   };
 
@@ -99,7 +126,7 @@ export const TimedTicketPlanList: React.FC = () => {
             render={(value) => (
               <span style={{ fontWeight: "bold" }}>{value}</span>
             )}
-            {...getSorterProps('name')}
+            {...getSorterProps("name")}
           />
           <Table.Column
             dataIndex="validDuration"
@@ -109,7 +136,7 @@ export const TimedTicketPlanList: React.FC = () => {
                 <ClockCircleOutlined /> {formatDuration(value)}
               </span>
             )}
-            {...getSorterProps('validDuration')}
+            {...getSorterProps("validDuration")}
           />
           <Table.Column
             dataIndex="basePrice"
@@ -119,13 +146,27 @@ export const TimedTicketPlanList: React.FC = () => {
                 <DollarOutlined /> {value.toLocaleString()}
               </span>
             )}
-            {...getSorterProps('basePrice')}
+            {...getSorterProps("basePrice")}
+          />
+          <Table.Column
+            dataIndex="isActive"
+            title="Status"
+            render={(value) => (
+              <span>
+                {value ? (
+                  <span style={{ color: "green" }}>Active</span>
+                ) : (
+                  <span style={{ color: "red" }}>Inactive</span>
+                )}
+              </span>
+            )}
+            {...getSorterProps("isActive")}
           />
           <Table.Column
             dataIndex="createdAt"
             title="Created At"
             render={(value: string) => formatDate(value)}
-            {...getSorterProps('createdAt')}
+            {...getSorterProps("createdAt")}
           />
           <Table.Column
             title="Actions"
@@ -133,13 +174,36 @@ export const TimedTicketPlanList: React.FC = () => {
             render={(_: unknown, record: TimedTicketPlanDto) => (
               <Space>
                 <ShowButton hideText size="small" recordItemId={record.id} />
-                {perm.data == "ADMIN" && <EditButton hideText size="small" recordItemId={record.id} />}
-                {perm.data == "ADMIN" && <DeleteButton
-                  hideText
-                  size="small"
-                  recordItemId={record.id}
-                  onSuccess={() => handleDelete(record.id)}
-                />}
+                {perm.data == "ADMIN" && (
+                  <EditButton hideText size="small" recordItemId={record.id} />
+                )}
+                {perm.data == "ADMIN" && record.isActive ? (
+                  <Popconfirm
+                    title="Delete P2P Journey"
+                    description="Are you sure you want to delete this P2P journey?"
+                    onConfirm={() => handleDelete(record.id)}
+                    okText="Yes"
+                    cancelText="No"
+                  >
+                    <Button
+                      danger
+                      size="small"
+                      icon={<DeleteOutlined />}
+                      loading={deactivateMutation.isPending}
+                    />
+                  </Popconfirm>
+                ) : (
+                  <Button
+                    color="green"
+                    variant="outlined"
+                    type="default"
+                    size="small"
+                    onClick={() => {
+                      handleActivate(record.id);
+                    }}
+                    icon={<CheckCircleOutlined />}
+                  />
+                )}
               </Space>
             )}
           />

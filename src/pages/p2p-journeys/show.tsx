@@ -1,6 +1,6 @@
 import React from "react";
 import { Show } from "@refinedev/antd";
-import { Typography, Card, Row, Col, Divider, Spin } from "antd";
+import { Typography, Card, Row, Col, Divider, Spin, Tag } from "antd";
 import {
   DollarOutlined,
   ClockCircleOutlined,
@@ -19,7 +19,7 @@ export const P2PJourneyShow: React.FC = () => {
   const { data: journey, isLoading } = useP2PJourney(id!);
 
   const perm = usePermissions();
-  
+
   if (isLoading) {
     return (
       <Spin size="large" style={{ display: "block", margin: "20px auto" }} />
@@ -35,9 +35,22 @@ export const P2PJourneyShow: React.FC = () => {
       <Card>
         <Row gutter={[16, 16]}>
           <Col span={24} style={{ textAlign: "center", marginBottom: 16 }}>
-            <Title level={2}>
+            <Title
+              level={2}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
               <EnvironmentOutlined /> {journey.startStationId} →{" "}
               {journey.endStationId}
+              <Tag
+                color={journey.isActive ? "green" : "red"}
+                style={{ marginLeft: 8 }}
+              >
+                {journey.isActive ? "Active" : "Inactive"}
+              </Tag>
             </Title>
           </Col>
         </Row>

@@ -30,7 +30,8 @@ export const useTimedTicketPlans = (
 ) => {
   return useQuery({
     queryKey: QUERY_KEYS.timedTicketPlansPage(page, size, sort, filters),
-    queryFn: () => ticketService.getTimedTicketPlans({ page, size, sort }, filters),
+    queryFn: () =>
+      ticketService.getTimedTicketPlans({ page, size, sort }, filters),
   });
 };
 
@@ -86,7 +87,7 @@ export const useUpdateTimedTicketPlan = () => {
 };
 
 // Delete timed ticket plan mutation
-export const useDeleteTimedTicketPlan = () => {
+export const useDeactivateTimedTicketPlan = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -97,6 +98,22 @@ export const useDeleteTimedTicketPlan = () => {
     },
     onError: (error: any) => {
       message.error(error?.error || "Failed to delete timed ticket plan");
+    },
+  });
+};
+
+//Activate timed ticket plan mutation
+export const useActivateTimedTicketPlan = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => ticketService.activateTimedTicketPlan(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.timedTicketPlans });
+      message.success("Timed Ticket Plan activated successfully!");
+    },
+    onError: (error: any) => {
+      message.error(error?.error || "Failed to activate timed ticket plan");
     },
   });
 };

@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { Edit } from "@refinedev/antd";
-import { Form, Input, InputNumber, Card } from "antd";
+import { Form, Input, InputNumber, Card, Switch } from "antd";
 import { P2PJourneyUpdateRequest } from "../../data";
 import { useP2PJourney, useUpdateP2PJourney } from "../../hooks";
 import { useParams, useNavigate } from "react-router";
@@ -138,6 +138,22 @@ export const P2PJourneyEdit: React.FC = () => {
               style={{ width: "100%" }}
               placeholder="Enter travel time in minutes"
               min={0}
+            />
+          </Form.Item>
+          <Form.Item
+            label="Status"
+            name="isActive"
+            rules={[
+              {
+                required: true,
+                message: "Please select the journey status",
+              },
+            ]}
+          >
+            <Switch
+              checkedChildren="Active"
+              unCheckedChildren="Inactive"
+              defaultChecked
             />
           </Form.Item>
         </Card>

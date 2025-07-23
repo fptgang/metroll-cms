@@ -129,7 +129,15 @@ export const MetroLineMap: React.FC<MetroLineMapProps> = ({
     // Add station markers
     stations.forEach((station) => {
       if (station.lat && station.lng) {
-        const marker = L.marker([station.lat, station.lng]).addTo(map);
+        const marker =
+          station.status !== "OPERATIONAL"
+            ? L.circleMarker([station.lat, station.lng], {
+                radius: 10,
+                color: "red",
+                fillColor: "orange",
+                fillOpacity: 0.5,
+              }).addTo(map)
+            : L.marker([station.lat, station.lng]).addTo(map);
 
         // Create popup content
         const popupContent = `

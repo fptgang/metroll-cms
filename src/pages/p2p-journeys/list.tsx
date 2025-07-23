@@ -1,19 +1,28 @@
 import React, { useState } from "react";
+import { EditButton, ShowButton, CreateButton } from "@refinedev/antd";
 import {
-  EditButton,
-  ShowButton,
-  CreateButton,
-} from "@refinedev/antd";
-import { Table, Space, Card, Input, Pagination, Button, Popconfirm } from "antd";
+  Table,
+  Space,
+  Card,
+  Input,
+  Pagination,
+  Button,
+  Popconfirm,
+} from "antd";
 import type { SortOrder } from "antd/es/table/interface";
 import {
   SearchOutlined,
   DollarOutlined,
   ClockCircleOutlined,
   DeleteOutlined,
+  CheckCircleOutlined,
 } from "@ant-design/icons";
 import { P2PJourneyDto, SortDirection } from "../../data";
-import { useP2PJourneys, useDeleteP2PJourney } from "../../hooks";
+import {
+  useP2PJourneys,
+  useDeactivateP2PJourney,
+  useActivateP2PJourney,
+} from "../../hooks";
 import { formatDate } from "../../utils/formatDate";
 import { usePermissions } from "@refinedev/core";
 
@@ -22,36 +31,47 @@ export const P2PJourneyList: React.FC = () => {
   const [size, setSize] = useState(10);
   const [searchQuery, setSearchQuery] = useState("");
   const [sort, setSort] = useState<Record<string, SortDirection>>({
-    createdAt: SortDirection.DESC
+    createdAt: SortDirection.DESC,
   });
   const perm = usePermissions();
 
   const { data, isLoading } = useP2PJourneys(page, size, sort, {
-    search: searchQuery
+    search: searchQuery,
   });
-  const deleteMutation = useDeleteP2PJourney();
+  const deactivateMutation = useDeactivateP2PJourney();
+  const activateMutation = useActivateP2PJourney();
 
   const handleDelete = (id: string) => {
-    deleteMutation.mutate(id);
+    deactivateMutation.mutate(id);
+  };
+
+  const handleActivate = (id: string) => {
+    activateMutation.mutate(id);
   };
 
   // Handle table changes including sorting
   const handleTableChange = (pagination: any, filters: any, sorter: any) => {
     const newSort: Record<string, SortDirection> = {};
-    
+
     // Handle multiple column sorting
     if (Array.isArray(sorter)) {
       sorter.forEach((s) => {
         if (s.field && s.order) {
-          newSort[s.field] = s.order === 'ascend' ? SortDirection.ASC : SortDirection.DESC;
+          newSort[s.field] =
+            s.order === "ascend" ? SortDirection.ASC : SortDirection.DESC;
         }
       });
     } else if (sorter.field && sorter.order) {
       // Handle single column sorting
-      newSort[sorter.field] = sorter.order === 'ascend' ? SortDirection.ASC : SortDirection.DESC;
+      newSort[sorter.field] =
+        sorter.order === "ascend" ? SortDirection.ASC : SortDirection.DESC;
     }
-    
-    setSort(Object.keys(newSort).length > 0 ? newSort : { createdAt: SortDirection.DESC });
+
+    setSort(
+      Object.keys(newSort).length > 0
+        ? newSort
+        : { createdAt: SortDirection.DESC }
+    );
   };
 
   // Convert sort state to antd sorter format for controlled sorting
@@ -59,7 +79,11 @@ export const P2PJourneyList: React.FC = () => {
     const sortDirection = sort?.[field];
     return {
       sorter: true,
-      sortOrder: sortDirection ? (sortDirection === SortDirection.ASC ? 'ascend' : 'descend') as SortOrder : undefined,
+      sortOrder: sortDirection
+        ? ((sortDirection === SortDirection.ASC
+            ? "ascend"
+            : "descend") as SortOrder)
+        : undefined,
     };
   };
 
@@ -91,18 +115,14 @@ export const P2PJourneyList: React.FC = () => {
           <Table.Column
             dataIndex="startStationId"
             title="Start Station"
-            render={(value) => (
-              <span>{value}</span>
-            )}
-            {...getSorterProps('startStationId')}
+            render={(value) => <span>{value}</span>}
+            {...getSorterProps("startStationId")}
           />
           <Table.Column
             dataIndex="endStationId"
             title="End Station"
-            render={(value) => (
-              <span>{value}</span>
-            )}
-            {...getSorterProps('endStationId')}
+            render={(value) => <span>{value}</span>}
+            {...getSorterProps("endStationId")}
           />
           <Table.Column
             dataIndex="basePrice"
@@ -112,13 +132,13 @@ export const P2PJourneyList: React.FC = () => {
                 <DollarOutlined /> {value.toLocaleString()}
               </span>
             )}
-            {...getSorterProps('basePrice')}
+            {...getSorterProps("basePrice")}
           />
           <Table.Column
             dataIndex="distance"
             title="Distance (km)"
             render={(value) => `${value} km`}
-            {...getSorterProps('distance')}
+            {...getSorterProps("distance")}
           />
           <Table.Column
             dataIndex="travelTime"
@@ -128,13 +148,23 @@ export const P2PJourneyList: React.FC = () => {
                 <ClockCircleOutlined /> {value} min
               </span>
             )}
-            {...getSorterProps('travelTime')}
+            {...getSorterProps("travelTime")}
+          />
+          <Table.Column
+            dataIndex="isActive"
+            title="Status"
+            render={(value: boolean) => (
+              <span style={{ color: value ? "green" : "red" }}>
+                {value ? "Active" : "Inactive"}
+              </span>
+            )}
+            {...getSorterProps("isActive")}
           />
           <Table.Column
             dataIndex="createdAt"
             title="Created At"
             render={(value: string) => formatDate(value)}
-            {...getSorterProps('createdAt')}
+            {...getSorterProps("createdAt")}
           />
           <Table.Column
             title="Actions"
@@ -142,8 +172,10 @@ export const P2PJourneyList: React.FC = () => {
             render={(_: unknown, record: P2PJourneyDto) => (
               <Space>
                 <ShowButton hideText size="small" recordItemId={record.id} />
-                {perm.data == "ADMIN" && <EditButton hideText size="small" recordItemId={record.id} />} 
                 {perm.data == "ADMIN" && (
+                  <EditButton hideText size="small" recordItemId={record.id} />
+                )}
+                {perm.data == "ADMIN" && record.isActive && (
                   <Popconfirm
                     title="Delete P2P Journey"
                     description="Are you sure you want to delete this P2P journey?"
@@ -155,9 +187,21 @@ export const P2PJourneyList: React.FC = () => {
                       danger
                       size="small"
                       icon={<DeleteOutlined />}
-                      loading={deleteMutation.isPending}
+                      loading={deactivateMutation.isPending}
                     />
                   </Popconfirm>
+                )}
+                {perm.data == "ADMIN" && !record.isActive && (
+                  <Button
+                    color="green"
+                    variant="outlined"
+                    type="default"
+                    size="small"
+                    onClick={() => {
+                      handleActivate(record.id);
+                    }}
+                    icon={<CheckCircleOutlined />}
+                  />
                 )}
               </Space>
             )}

@@ -27,6 +27,7 @@ export interface P2PJourneyDto extends BaseEntity {
   basePrice: number;
   distance: number;
   travelTime: number;
+  isActive: boolean;
 }
 
 // P2P Journey Create Request
@@ -52,6 +53,7 @@ export interface TimedTicketPlanDto extends BaseEntity {
   name: string;
   validDuration: number;
   basePrice: number;
+  isActive: boolean;
 }
 
 // Timed Ticket Plan Create Request

@@ -143,6 +143,7 @@ export const StationEdit: React.FC = () => {
                 <Input
                   placeholder="e.g., S001, CENTRAL"
                   className="font-mono"
+                  disabled
                   style={{ textTransform: "uppercase" }}
                 />
               </Form.Item>

@@ -254,7 +254,15 @@ export class TicketService extends BaseService {
     }
   }
 
-
+  async activateP2PJourney(id: string): Promise<P2PJourneyDto> {
+    try {
+      return await this.put<P2PJourneyDto>(
+        `${this.journeyEndpoint}/${id}/activate`
+      );
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
 
   // Timed Ticket Plan Operations
   async getTimedTicketPlans(
@@ -307,6 +315,16 @@ export class TicketService extends BaseService {
   async deleteTimedTicketPlan(id: string): Promise<void> {
     try {
       await this.delete<void>(`${this.planEndpoint}/${id}`);
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async activateTimedTicketPlan(id: string): Promise<TimedTicketPlanDto> {
+    try {
+      return await this.put<TimedTicketPlanDto>(
+        `${this.planEndpoint}/${id}/activate`
+      );
     } catch (error) {
       throw this.handleError(error);
     }

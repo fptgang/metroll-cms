@@ -1,6 +1,6 @@
 import React from "react";
 import { Show } from "@refinedev/antd";
-import { Typography, Card, Row, Col, Divider, Spin } from "antd";
+import { Typography, Card, Row, Col, Divider, Spin, Tag } from "antd";
 import {
   DollarOutlined,
   ClockCircleOutlined,
@@ -18,7 +18,7 @@ export const TimedTicketPlanShow: React.FC = () => {
   const { data: plan, isLoading } = useTimedTicketPlan(id!);
 
   const perm = usePermissions();
-  
+
   if (isLoading) {
     return (
       <Spin size="large" style={{ display: "block", margin: "20px auto" }} />
@@ -44,7 +44,22 @@ export const TimedTicketPlanShow: React.FC = () => {
       <Card>
         <Row gutter={[16, 16]}>
           <Col span={24} style={{ textAlign: "center", marginBottom: 16 }}>
-            <Title level={2}>{plan.name}</Title>
+            <Title
+              level={2}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              {plan.name}
+              <Tag
+                color={plan.isActive ? "green" : "red"}
+                style={{ marginLeft: 8 }}
+              >
+                {plan.isActive ? "Active" : "Inactive"}
+              </Tag>
+            </Title>
           </Col>
         </Row>
 

@@ -58,8 +58,6 @@ export const useP2PJourneyByStations = (
   });
 };
 
-
-
 // Create P2P journey mutation
 export const useCreateP2PJourney = () => {
   const queryClient = useQueryClient();
@@ -98,11 +96,27 @@ export const useUpdateP2PJourney = () => {
 };
 
 // Delete P2P journey mutation
-export const useDeleteP2PJourney = () => {
+export const useDeactivateP2PJourney = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (id: string) => ticketService.deleteP2PJourney(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.p2pJourneys });
+      message.success("P2P Journey deleted successfully!");
+    },
+    onError: (error: any) => {
+      message.error(error?.error || "Failed to delete P2P journey");
+    },
+  });
+};
+
+//Activate P2P journey mutation
+export const useActivateP2PJourney = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => ticketService.activateP2PJourney(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.p2pJourneys });
       message.success("P2P Journey deleted successfully!");
