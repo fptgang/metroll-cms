@@ -60,9 +60,6 @@ export const VoucherEdit: React.FC = () => {
     >
       <Form form={form} onFinish={onFinish} layout="vertical">
         <Card title="Edit Voucher">
-          <Form.Item label="Owner ID" name="ownerId">
-            <Input disabled />
-          </Form.Item>
           <Form.Item
             label="Discount Amount"
             name="discountAmount"
@@ -133,21 +130,6 @@ export const VoucherEdit: React.FC = () => {
                 dayjs(formatDate(voucher?.validUntil || "")),
               ]}
             />
-          </Form.Item>
-          <Form.Item label="Status" name="status">
-            <Select disabled placeholder="Select status">
-              <Select.Option value={VoucherStatus.PRESERVED}>
-                Preserved
-              </Select.Option>
-              <Select.Option value={VoucherStatus.VALID}>Valid</Select.Option>
-              <Select.Option value={VoucherStatus.USED}>Used</Select.Option>
-              <Select.Option value={VoucherStatus.EXPIRED}>
-                Expired
-              </Select.Option>
-              <Select.Option value={VoucherStatus.REVOKED}>
-                Revoked
-              </Select.Option>
-            </Select>
           </Form.Item>
         </Card>
       </Form>

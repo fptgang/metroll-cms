@@ -97,11 +97,6 @@ export const VoucherList: React.FC = () => {
           pagination={false}
           onChange={handleTableChange}
         >
-          <Table.Column
-              dataIndex={["owner", "fullName"]}
-              title="Owner"
-              {...getSorterProps('owner.fullName')}
-          />
           {perm.data === 'ADMIN' && <Table.Column
             dataIndex="code"
             title="Voucher Code"
@@ -157,6 +152,18 @@ export const VoucherList: React.FC = () => {
             title="Created At"
             render={(value: string) => formatDate(value)}
             {...getSorterProps('createdAt')}
+          />
+          <Table.Column
+              dataIndex={["issuer", "fullName"]}
+              title="Issuer"
+              render={(value, record: VoucherDto) => record.issuer?.fullName || "-"}
+              {...getSorterProps('issuer.fullName')}
+          />
+          <Table.Column
+              dataIndex={["user", "fullName"]}
+              title="User"
+              render={(value, record: VoucherDto) => record.user?.fullName || "-"}
+              {...getSorterProps('user.fullName')}
           />
           <Table.Column
             title="Actions"

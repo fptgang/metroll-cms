@@ -23,7 +23,6 @@ export const VoucherCreate: React.FC = () => {
   const [form] = Form.useForm();
   const createMutation = useCreateVoucher();
   const navigate = useNavigate();
-  const [generatedCode, setGeneratedCode] = useState<string>("");
 
   // Fetch accounts for the dropdown list
   const {
@@ -31,14 +30,6 @@ export const VoucherCreate: React.FC = () => {
     isLoading: isAccountsLoading,
     error: accountsError,
   } = useAccounts(0, 100, {}); // Fetch up to 100 accounts
-
-  const generateVoucherCode = () => {
-    const timestamp = Date.now().toString(36).toUpperCase();
-    const random = Math.random().toString(36).substring(2, 8).toUpperCase();
-    const code = `METRO${timestamp}${random}`;
-    setGeneratedCode(code);
-    form.setFieldValue("code", code);
-  };
 
   const onFinish = async (values: any) => {
     const { dateRange, ...rest } = values;
@@ -65,19 +56,19 @@ export const VoucherCreate: React.FC = () => {
       <Form form={form} onFinish={onFinish} layout="vertical">
         <Card title="Create New Voucher">
           <Form.Item
-            label="Select Owners"
-            name="ownerIds"
+            label="Select Recipients"
+            name="recipients"
             rules={[
               {
                 required: true,
-                message: "Please select at least one owner",
+                message: "Please select at least one recipient",
               },
             ]}
           >
             <Select
               mode="multiple"
               style={{ width: "100%" }}
-              placeholder="Select users as voucher owners"
+              placeholder="Select users as voucher recipients"
               loading={isAccountsLoading}
               showSearch
               filterOption={(input, option) =>
