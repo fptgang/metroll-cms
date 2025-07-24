@@ -5,7 +5,8 @@ import {AccountDto} from "./account";
 // Voucher DTO - mirrors VoucherDto.java
 export interface VoucherDto extends BaseEntity {
   ownerId: string;
-  owner: AccountDto;
+  issuer: AccountDto;
+  user: AccountDto;
   code?: string;
   discountAmount: number;
   minTransactionAmount: number;

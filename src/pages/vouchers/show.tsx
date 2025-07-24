@@ -62,11 +62,18 @@ export const VoucherShow: React.FC = () => {
         </Row>
 
         <Row gutter={[16, 16]}>
-          <Col span={12}>
-            <Title level={5}>Owner</Title>
-            <Text>{voucher.owner.fullName} (#{voucher.ownerId})</Text>
+          <Col span={8}>
+            <Title level={5}>Issuer</Title>
+            <Text>{voucher.issuer.fullName} (#{voucher.issuer.id})</Text>
           </Col>
-          <Col span={12}>
+          {voucher.user ? <Col span={8}>
+            <Title level={5}>User</Title>
+            <Text>{voucher.user.fullName} (#{voucher.user.id})</Text>
+          </Col> : <Col span={8}>
+            <Title level={5}>User</Title>
+            <Text style={{ color: "gray" }}>-</Text>
+          </Col>}
+          <Col span={8}>
             <Title level={5}>Voucher Code</Title>
             {perm.data === 'ADMIN' ? <Text style={{ fontFamily: "monospace", fontWeight: "bold" }}>
               {voucher.code}
