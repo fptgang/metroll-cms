@@ -5,6 +5,7 @@ export enum StationStatus {
   OPERATIONAL = "OPERATIONAL",
   UNDER_MAINTENANCE = "UNDER_MAINTENANCE",
   CLOSED = "CLOSED",
+  SCHEDULED_CLOSURE = "SCHEDULED_CLOSURE",
 }
 
 export enum LineStatus {

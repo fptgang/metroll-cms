@@ -106,6 +106,8 @@ export const StationList: React.FC = () => {
         return "orange";
       case StationStatus.CLOSED:
         return "red";
+      case StationStatus.SCHEDULED_CLOSURE:
+        return "purple";
       default:
         return "default";
     }
@@ -119,6 +121,8 @@ export const StationList: React.FC = () => {
         return <BuildOutlined />;
       case StationStatus.CLOSED:
         return <StopOutlined />;
+      case StationStatus.SCHEDULED_CLOSURE:
+        return <ExclamationCircleOutlined />;
       default:
         return <ExclamationCircleOutlined />;
     }
@@ -256,6 +260,9 @@ export const StationList: React.FC = () => {
               </Option>
               <Option value={StationStatus.CLOSED}>
                 <Tag color="red">Closed</Tag>
+              </Option>
+              <Option value={StationStatus.SCHEDULED_CLOSURE}>
+                <Tag color="purple">Scheduled Closure</Tag>
               </Option>
             </Select>
 

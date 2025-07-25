@@ -149,12 +149,9 @@ export const P2PJourneyEdit: React.FC = () => {
                 message: "Please select the journey status",
               },
             ]}
+            initialValue={journey?.isActive ? true : false}
           >
-            <Switch
-              checkedChildren="Active"
-              unCheckedChildren="Inactive"
-              defaultChecked
-            />
+            <Switch checkedChildren="Active" unCheckedChildren="Inactive" />
           </Form.Item>
         </Card>
       </Form>

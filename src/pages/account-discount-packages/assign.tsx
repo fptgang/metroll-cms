@@ -1,10 +1,29 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router";
-import { Card, Form, Input, Button, Space, Select, Spin, Upload, message, Modal } from "antd";
-import { SaveOutlined, ArrowLeftOutlined, InboxOutlined, EyeOutlined, DeleteOutlined, CameraOutlined } from "@ant-design/icons";
+import {
+  Card,
+  Form,
+  Input,
+  Button,
+  Space,
+  Select,
+  Spin,
+  Upload,
+  message,
+  Modal,
+} from "antd";
+import {
+  SaveOutlined,
+  ArrowLeftOutlined,
+  InboxOutlined,
+  EyeOutlined,
+  DeleteOutlined,
+  CameraOutlined,
+} from "@ant-design/icons";
 import {
   AccountDiscountAssignRequest,
-  AccountRole, SortDirection,
+  AccountRole,
+  SortDirection,
 } from "../../data/interfaces";
 import {
   useAssignDiscountPackage,
@@ -20,8 +39,8 @@ export const AccountDiscountPackageAssign: React.FC = () => {
   const [form] = Form.useForm();
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
-  const [previewImage, setPreviewImage] = useState('');
-  const [previewTitle, setPreviewTitle] = useState('');
+  const [previewImage, setPreviewImage] = useState("");
+  const [previewTitle, setPreviewTitle] = useState("");
   const [fileList, setFileList] = useState<any[]>([]);
   const [cameraModalOpen, setCameraModalOpen] = useState(false);
   const assignMutation = useAssignDiscountPackage();
@@ -44,7 +63,7 @@ export const AccountDiscountPackageAssign: React.FC = () => {
         discountPackageId: values.discountPackageId,
         document: uploadedFile || undefined,
       };
-      
+
       await assignMutation.mutateAsync(request);
       navigate("/account-discount-packages");
     } catch (error) {
@@ -68,13 +87,15 @@ export const AccountDiscountPackageAssign: React.FC = () => {
     }
     setPreviewImage(file.url || file.preview);
     setPreviewOpen(true);
-    setPreviewTitle(file.name || file.url.substring(file.url.lastIndexOf('/') + 1));
+    setPreviewTitle(
+      file.name || file.url.substring(file.url.lastIndexOf("/") + 1)
+    );
   };
 
   // Handle file list changes
   const handleChange = ({ fileList: newFileList }: any) => {
     setFileList(newFileList);
-    
+
     if (newFileList.length > 0) {
       const file = newFileList[0].originFileObj || newFileList[0];
       setUploadedFile(file);
@@ -88,7 +109,7 @@ export const AccountDiscountPackageAssign: React.FC = () => {
     // Validate the captured image
     const isLt5M = file.size / 1024 / 1024 < 5;
     if (!isLt5M) {
-      message.error('Captured image must be smaller than 5MB!');
+      message.error("Captured image must be smaller than 5MB!");
       return;
     }
 
@@ -96,31 +117,37 @@ export const AccountDiscountPackageAssign: React.FC = () => {
     const fileObj = {
       uid: Date.now().toString(),
       name: file.name,
-      status: 'done' as const,
+      status: "done" as const,
       originFileObj: file,
     };
 
     setFileList([fileObj]);
     setUploadedFile(file);
     setCameraModalOpen(false);
-    message.success('Photo captured successfully!');
+    message.success("Photo captured successfully!");
   };
 
   const uploadProps = {
-    name: 'document',
-    listType: 'picture-card' as const,
+    name: "document",
+    listType: "picture-card" as const,
     fileList: fileList,
     onPreview: handlePreview,
     onChange: handleChange,
     beforeUpload: (file: File) => {
-      const isValidType = ['image/jpeg', 'image/png', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'].includes(file.type);
+      const isValidType = [
+        "image/jpeg",
+        "image/png",
+        "application/pdf",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      ].includes(file.type);
       if (!isValidType) {
-        message.error('You can only upload JPG/PNG/PDF/DOC files!');
+        message.error("You can only upload JPG/PNG/PDF/DOC files!");
         return false;
       }
       const isLt5M = file.size / 1024 / 1024 < 5;
       if (!isLt5M) {
-        message.error('File must be smaller than 5MB!');
+        message.error("File must be smaller than 5MB!");
         return false;
       }
       return false; // Prevent auto upload
@@ -166,18 +193,21 @@ export const AccountDiscountPackageAssign: React.FC = () => {
           <Select
             placeholder="Select customer account"
             showSearch
+            allowClear
             filterOption={(input, option) =>
-              (option?.children as unknown as string)
-                ?.toLowerCase()
-                .includes(input.toLowerCase())
+              (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
             }
-          >
-            {accounts.map((account) => (
-              <Option key={account.id} value={account.id}>
-                {account.fullName} ({account.email})
-              </Option>
-            ))}
-          </Select>
+            options={
+              accountsData?.content
+                ?.filter(
+                  (account) => account.role === "CUSTOMER" && account.active
+                )
+                .map((account) => ({
+                  label: `${account.fullName} (${account.email})`,
+                  value: account.id,
+                })) || []
+            }
+          />
         </Form.Item>
 
         <Form.Item
@@ -190,18 +220,27 @@ export const AccountDiscountPackageAssign: React.FC = () => {
           <Select
             placeholder="Select discount package"
             showSearch
+            allowClear
             filterOption={(input, option) =>
-              (option?.children as unknown as string)
-                ?.toLowerCase()
-                .includes(input.toLowerCase())
+              (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
             }
+            options={discountPackages
+              ?.filter((pkg) => pkg.status === "ACTIVE")
+              .map((pkg) => ({
+                label: `${pkg.name} (${(pkg.discountPercentage * 100).toFixed(
+                  0
+                )}% off, ${pkg.duration} days)`,
+                value: pkg.id,
+              }))}
           >
-            {discountPackages.filter((pkg) => pkg.status === "ACTIVE").map((pkg) => (
-              <Option key={pkg.id} value={pkg.id}>
-                {pkg.name} ({(pkg.discountPercentage * 100).toFixed(0)}% off,{" "}
-                {pkg.duration} days)
-              </Option>
-            ))}
+            {discountPackages
+              .filter((pkg) => pkg.status === "ACTIVE")
+              .map((pkg) => (
+                <Option key={pkg.id} value={pkg.id}>
+                  {pkg.name} ({(pkg.discountPercentage * 100).toFixed(0)}% off,{" "}
+                  {pkg.duration} days)
+                </Option>
+              ))}
           </Select>
         </Form.Item>
 
@@ -212,14 +251,18 @@ export const AccountDiscountPackageAssign: React.FC = () => {
             {
               validator: (_, value) => {
                 if (!uploadedFile) {
-                  return Promise.reject(new Error('Please upload a proof document'));
+                  return Promise.reject(
+                    new Error("Please upload a proof document")
+                  );
                 }
                 return Promise.resolve();
               },
             },
           ]}
         >
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "16px" }}
+          >
             {/* Upload Component */}
             <Upload {...uploadProps}>
               {fileList.length >= 1 ? null : (
@@ -229,21 +272,21 @@ export const AccountDiscountPackageAssign: React.FC = () => {
                 </div>
               )}
             </Upload>
-            
+
             {/* Camera Capture Option */}
             {fileList.length === 0 && (
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ margin: '8px 0', color: '#999' }}>— OR —</div>
+              <div style={{ textAlign: "center" }}>
+                <div style={{ margin: "8px 0", color: "#999" }}>— OR —</div>
                 <Button
                   type="dashed"
                   icon={<CameraOutlined />}
                   onClick={() => setCameraModalOpen(true)}
                   size="large"
-                  style={{ 
-                    width: '100%',
-                    height: '50px',
-                    borderStyle: 'dashed',
-                    borderColor: '#d9d9d9'
+                  style={{
+                    width: "100%",
+                    height: "50px",
+                    borderStyle: "dashed",
+                    borderColor: "#d9d9d9",
                   }}
                 >
                   Take Photo with Camera
@@ -251,9 +294,10 @@ export const AccountDiscountPackageAssign: React.FC = () => {
               </div>
             )}
           </div>
-          
-          <div style={{ marginTop: 8, color: '#666', fontSize: '12px' }}>
-            Upload: JPG, PNG, PDF, DOC, DOCX (max 5MB) | Camera: Live preview with capture
+
+          <div style={{ marginTop: 8, color: "#666", fontSize: "12px" }}>
+            Upload: JPG, PNG, PDF, DOC, DOCX (max 5MB) | Camera: Live preview
+            with capture
           </div>
         </Form.Item>
 
@@ -282,7 +326,7 @@ export const AccountDiscountPackageAssign: React.FC = () => {
         footer={null}
         onCancel={() => setPreviewOpen(false)}
       >
-        <img alt="preview" style={{ width: '100%' }} src={previewImage} />
+        <img alt="preview" style={{ width: "100%" }} src={previewImage} />
       </Modal>
 
       {/* Camera Capture Modal */}

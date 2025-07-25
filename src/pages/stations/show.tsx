@@ -48,6 +48,8 @@ export const StationShow: React.FC = () => {
         return "orange";
       case StationStatus.CLOSED:
         return "red";
+      case StationStatus.SCHEDULED_CLOSURE:
+        return "purple";
       default:
         return "default";
     }
@@ -61,6 +63,8 @@ export const StationShow: React.FC = () => {
         return <BuildOutlined />;
       case StationStatus.CLOSED:
         return <StopOutlined />;
+      case StationStatus.SCHEDULED_CLOSURE:
+        return <ExclamationCircleOutlined />;
       default:
         return <ExclamationCircleOutlined />;
     }
@@ -98,16 +102,16 @@ export const StationShow: React.FC = () => {
         }
         extra={
           <Space>
-            {perm.data == "ADMIN" &&
+            {perm.data == "ADMIN" && (
               <Button
                 icon={<EditOutlined />}
                 onClick={handleEdit}
                 type="primary"
                 className="bg-green-600 hover:bg-green-700"
               >
-              Edit Station
-            </Button>
-            }
+                Edit Station
+              </Button>
+            )}
             <Button icon={<ArrowLeftOutlined />} onClick={handleBack}>
               Back to Stations
             </Button>
@@ -255,14 +259,16 @@ export const StationShow: React.FC = () => {
           {/* Quick Actions */}
           <Card title="Quick Actions" size="small">
             <Space wrap>
-              {perm.data == "ADMIN" && <Button
-                icon={<EditOutlined />}
-                onClick={handleEdit}
-                type="primary"
-                className="bg-green-600 hover:bg-green-700"
-              >
-                Edit Station
-              </Button>}
+              {perm.data == "ADMIN" && (
+                <Button
+                  icon={<EditOutlined />}
+                  onClick={handleEdit}
+                  type="primary"
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  Edit Station
+                </Button>
+              )}
               <Button
                 icon={<GlobalOutlined />}
                 onClick={() =>
